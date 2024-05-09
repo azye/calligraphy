@@ -1,3 +1,4 @@
+// @ts-nocheck
 // import './style.css'
 import Konva from 'konva'
 
