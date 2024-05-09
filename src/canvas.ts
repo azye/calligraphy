@@ -94,14 +94,44 @@ const setupCounter = () => {
   var touching1 = false
   var touching2 = false
 
-  stage.on('touchmove', function (e) {
+  var isdragging = false
 
-    // console.log('move')
+  stage.on('mousedown', () => {
+    isdragging = true
+
+    var pos = layer.getRelativePointerPosition();
+    lastLine = new Konva.Line({
+      stroke: '#df4b26',
+      strokeWidth: 4 / stage.scaleX(),
+      globalCompositeOperation:
+        mode === 'brush' ? 'source-over' : 'destination-out',
+      // round cap for smoother lines
+      lineCap: 'round',
+      lineJoin: 'round',
+      // add point twice, so we have some drawings even on a simple click
+      points: [pos.x, pos.y, pos.x, pos.y],
+    });
+    layer.add(lastLine);
+  })
+
+
+  stage.on('mousemove', () => {
+    if (!isdragging) {
+      return
+    }
+    var pos = layer.getRelativePointerPosition();
+        var newPoints = lastLine.points().concat([pos.x, pos.y]);
+        lastLine.points(newPoints);
+  })
+
+  stage.on('mouseup', () => {
+    isdragging = false
+  })
+
+  stage.on('touchmove', function (e) {
     e.evt.preventDefault()
     var touch1 = e.evt.touches[0]
     var touch2 = e.evt.touches[1]
-
-    // console.log(touch1, touch2)
 
     // we need to restore dragging, if it was cancelled by multi-touch
     if (touch1 && !touch2 && !stage.isDragging() && dragStopped) {
@@ -123,7 +153,7 @@ const setupCounter = () => {
         var pos = layer.getRelativePointerPosition();
         lastLine = new Konva.Line({
           stroke: '#df4b26',
-          strokeWidth: 4 / stage.scaleX(),
+          strokeWidth: 4,
           globalCompositeOperation:
             mode === 'brush' ? 'source-over' : 'destination-out',
           // round cap for smoother lines
@@ -142,11 +172,9 @@ const setupCounter = () => {
       var pos = layer.getRelativePointerPosition();
         var newPoints = lastLine.points().concat([pos.x, pos.y]);
         lastLine.points(newPoints);
-        console.log("huh")
     }
 
     if (touch2 && isPaint) {
-      console.log('touch2')
       touching2 = true
       lastLine.destroy()
     }
@@ -155,8 +183,6 @@ const setupCounter = () => {
       touching2 = true
       touching1 = true
       isPaint = false
-      
-      console.log('pinch')
       // if the stage was under Konva's drag&drop
       // we need to stop it, and implement our own pan logic with two pointers
       if (stage.isDragging()) {
@@ -190,7 +216,7 @@ const setupCounter = () => {
       // local coordinates of center point
       var pointTo = {
         x: (newCenter.x - stage.x()) / stage.scaleX(),
-        y: (newCenter.y - stage.y()) / stage.scaleX(),
+        y: (newCenter.y - stage.y()) / stage.scaleY(),
       }
 
       var scale = stage.scaleX() * (dist / lastDist)
@@ -215,20 +241,16 @@ const setupCounter = () => {
   })
 
   stage.on('touchend', function (e) {
-    console.log('end')
     lastDist = 0
     lastCenter = null
     isPaint = false
-
-    
+ 
     var touch1 = e.evt.touches[0]
     var touch2 = e.evt.touches[1]
 
     if (!touch1 && !touch2) {
-
       touching1 = false
       touching2 = false
-  
     }
   })
 
