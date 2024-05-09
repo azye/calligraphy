@@ -123,7 +123,7 @@ const setupCounter = () => {
         var pos = layer.getRelativePointerPosition();
         lastLine = new Konva.Line({
           stroke: '#df4b26',
-          strokeWidth: 5,
+          strokeWidth: 4 / stage.scaleX(),
           globalCompositeOperation:
             mode === 'brush' ? 'source-over' : 'destination-out',
           // round cap for smoother lines
