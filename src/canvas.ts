@@ -2,12 +2,20 @@
 // import './style.css'
 import Konva from 'konva'
 
-const setupCounter = () => {
-  // var width = window.innerWidth;
-  // var height = window.innerHeight;
+const renderGrid = (layer: Konva.Layer) => {
+  var poly = new Konva.Line({
+    points: [23, 20, 23, 160, 70, 93, 150, 109, 290, 139, 270, 93],
+    fill: '#00D2FF',
+    stroke: 'black',
+    strokeWidth: 5,
+    closed: true,
+  });
 
-  // DOUBLE_TAP_SENSITIVITY_MAX is the sensitivity of a double tap vs a drag.
-  // const DOUBLE_TAP_SENSITIVITY_MAX = 1
+  // add the shape to the layer
+  layer.add(poly);
+}
+
+const setupCounter = () => {
   Konva.hitOnDragEnabled = true;
 
   // first we need Konva core things: stage and layer
@@ -19,24 +27,13 @@ const setupCounter = () => {
   })
 
   var layer = new Konva.Layer()
+  var graphLayer = new Konva.Layer({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  })
   stage.add(layer)
+  stage.add(graphLayer)
 
-  // var stageRect =  new Konva.Rect({
-  //   x:0,
-  //   y:0,
-  //   width: 8.5 * 96,
-  //   height: 11 * 96,
-  //   fill: 'red',
-  // })
-  // layer.add(stageRect);
-
-  // var isPaint = false;
-  // var mode = 'brush';
-  // var lastLine;
-  // var lineAdded = false
-  // var doubleTapSensitivityCounter = 0;
-  // var lastCenter = null;
-  // var lastDist = 0;
 
   var rect = new Konva.Rect({
     fill: 'grey',
@@ -47,33 +44,6 @@ const setupCounter = () => {
   })
 
   layer.add(rect)
-  //   stage.on('mousedown touchstart', function (e) {
-  //     e.evt.preventDefault();
-
-  //     isPaint = true;
-  //     var pos = stage.getRelativePointerPosition();
-  //     lastLine = new Konva.Line({
-  //       stroke: '#df4b26',
-  //       strokeWidth: 2,
-  //       globalCompositeOperation:
-  //         mode === 'brush' ? 'source-over' : 'destination-out',
-  //       // round cap for smoother lines
-  //       lineCap: 'round',
-  //       lineJoin: 'round',
-  //       // add point twice, so we have some drawings even on a simple click
-  //       points: [pos.x, pos.y, pos.x, pos.y],
-  //     });
-  //     // we explicitly do not immediately add the line to the layer on purpose to account for double-tap sensitivity
-  //   });
-
-  //   stage.on('mouseup touchend', function () {
-  //     isPaint = false;
-  //     lastLine = null
-  //     lastDist = 0;
-  //     doubleTapSensitivityCounter = 0;
-  //     lastCenter = null;
-  //     lineAdded = false
-  //   });
 
   function getDistance(p1, p2) {
     return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2))
@@ -121,8 +91,12 @@ const setupCounter = () => {
       return
     }
     var pos = layer.getRelativePointerPosition();
-        var newPoints = lastLine.points().concat([pos.x, pos.y]);
-        lastLine.points(newPoints);
+    if (pos.x >= 0 && pos.y >= 0) {
+      var newPoints = lastLine.points().concat([pos.x, pos.y]);
+      lastLine.points(newPoints);
+    }
+    // console.log(pos)
+        
   })
 
   stage.on('mouseup', () => {
@@ -171,8 +145,11 @@ const setupCounter = () => {
         return
       }
       var pos = layer.getRelativePointerPosition();
+
+      if (pos.x >= 0 && pos.y >= 0) {
         var newPoints = lastLine.points().concat([pos.x, pos.y]);
         lastLine.points(newPoints);
+      }
     }
 
     if (touch2 && isPaint) {
@@ -190,8 +167,6 @@ const setupCounter = () => {
         dragStopped = true
         stage.stopDrag()
       }
-      // lastLine.remove()
-
 
       var p1 = {
         x: touch1.clientX,
@@ -255,41 +230,10 @@ const setupCounter = () => {
     }
   })
 
-
-
-
-  // stage.on('mousedown touchstart', function (e) {
-  //   e.evt.preventDefault()
-    
-  //   var touch1 = e.evt.touches[0]
-  //   var touch2 = e.evt.touches[1]
-
-  //   console.log('start')
-
-  //   // we need to restore dragging, if it was cancelled by multi-touch
-  //   if (touch1 && !touch2 && !isPaint) {
-  //     // console.log('added')
-  //     isPaint = true;
-  //     var pos = layer.getRelativePointerPosition();
-  //     lastLine = new Konva.Line({
-  //       stroke: '#df4b26',
-  //       strokeWidth: 5,
-  //       globalCompositeOperation:
-  //         mode === 'brush' ? 'source-over' : 'destination-out',
-  //       // round cap for smoother lines
-  //       lineCap: 'round',
-  //       lineJoin: 'round',
-  //       // add point twice, so we have some drawings even on a simple click
-  //       points: [pos.x, pos.y, pos.x, pos.y],
-  //     });
-  //     layer.add(lastLine);
-  //   }
-  // });
-
   stage.on('mouseup touchend', function () {
     isPaint = false;
   });
-
+  renderGrid(graphLayer)
   
 }
 
