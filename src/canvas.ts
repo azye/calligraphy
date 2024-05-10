@@ -9,21 +9,20 @@ const renderGrid = (layer: Konva.Layer) => {
     stroke: 'black',
     strokeWidth: 5,
     closed: true,
-  });
+  })
 
   // add the shape to the layer
-  layer.add(poly);
+  layer.add(poly)
 }
 
 const setupCounter = () => {
-  Konva.hitOnDragEnabled = true;
+  Konva.hitOnDragEnabled = true
 
   // first we need Konva core things: stage and layer
   var stage = new Konva.Stage({
     container: 'container',
     width: window.innerWidth,
     height: window.innerHeight,
-    
   })
 
   var layer = new Konva.Layer()
@@ -33,7 +32,6 @@ const setupCounter = () => {
   })
   stage.add(layer)
   stage.add(graphLayer)
-
 
   var rect = new Konva.Rect({
     fill: 'grey',
@@ -58,9 +56,9 @@ const setupCounter = () => {
   var lastCenter = null
   var lastDist = 0
   var dragStopped = false
-  var isPaint = false;
-  var mode = 'brush';
-  var lastLine;
+  var isPaint = false
+  var mode = 'brush'
+  var lastLine
 
   var touching1 = false
   var touching2 = false
@@ -70,33 +68,30 @@ const setupCounter = () => {
   stage.on('mousedown', () => {
     isdragging = true
 
-    var pos = layer.getRelativePointerPosition();
+    var pos = layer.getRelativePointerPosition()
     lastLine = new Konva.Line({
       stroke: '#df4b26',
       strokeWidth: 4 / stage.scaleX(),
-      globalCompositeOperation:
-        mode === 'brush' ? 'source-over' : 'destination-out',
+      globalCompositeOperation: mode === 'brush' ? 'source-over' : 'destination-out',
       // round cap for smoother lines
       lineCap: 'round',
       lineJoin: 'round',
       // add point twice, so we have some drawings even on a simple click
       points: [pos.x, pos.y, pos.x, pos.y],
-    });
-    layer.add(lastLine);
+    })
+    layer.add(lastLine)
   })
-
 
   stage.on('mousemove', () => {
     if (!isdragging) {
       return
     }
-    var pos = layer.getRelativePointerPosition();
+    var pos = layer.getRelativePointerPosition()
     if (pos.x >= 0 && pos.y >= 0) {
-      var newPoints = lastLine.points().concat([pos.x, pos.y]);
-      lastLine.points(newPoints);
+      var newPoints = lastLine.points().concat([pos.x, pos.y])
+      lastLine.points(newPoints)
     }
     // console.log(pos)
-        
   })
 
   stage.on('mouseup', () => {
@@ -115,7 +110,6 @@ const setupCounter = () => {
       dragStopped = false
     }
 
-
     if (touch1 && !touch2 && !isPaint) {
       touching1 = true
 
@@ -124,31 +118,30 @@ const setupCounter = () => {
       }
 
       console.log('added')
-      isPaint = true;
-        var pos = layer.getRelativePointerPosition();
-        lastLine = new Konva.Line({
-          stroke: '#df4b26',
-          strokeWidth: 4,
-          globalCompositeOperation:
-            mode === 'brush' ? 'source-over' : 'destination-out',
-          // round cap for smoother lines
-          lineCap: 'round',
-          lineJoin: 'round',
-          // add point twice, so we have some drawings even on a simple click
-          points: [pos.x, pos.y, pos.x, pos.y],
-        });
-        layer.add(lastLine);
+      isPaint = true
+      var pos = layer.getRelativePointerPosition()
+      lastLine = new Konva.Line({
+        stroke: '#df4b26',
+        strokeWidth: 4,
+        globalCompositeOperation: mode === 'brush' ? 'source-over' : 'destination-out',
+        // round cap for smoother lines
+        lineCap: 'round',
+        lineJoin: 'round',
+        // add point twice, so we have some drawings even on a simple click
+        points: [pos.x, pos.y, pos.x, pos.y],
+      })
+      layer.add(lastLine)
     }
 
     if (isPaint && !touch2) {
       if (touching2) {
         return
       }
-      var pos = layer.getRelativePointerPosition();
+      var pos = layer.getRelativePointerPosition()
 
       if (pos.x >= 0 && pos.y >= 0) {
-        var newPoints = lastLine.points().concat([pos.x, pos.y]);
-        lastLine.points(newPoints);
+        var newPoints = lastLine.points().concat([pos.x, pos.y])
+        lastLine.points(newPoints)
       }
     }
 
@@ -220,7 +213,7 @@ const setupCounter = () => {
     lastDist = 0
     lastCenter = null
     isPaint = false
- 
+
     var touch1 = e.evt.touches[0]
     var touch2 = e.evt.touches[1]
 
@@ -231,10 +224,9 @@ const setupCounter = () => {
   })
 
   stage.on('mouseup touchend', function () {
-    isPaint = false;
-  });
+    isPaint = false
+  })
   renderGrid(graphLayer)
-  
 }
 
 setupCounter()
