@@ -154,7 +154,7 @@ const setupCounter = () => {
 
     if (touch2 && isPaint) {
       touching2 = true
-      lastLine.destroy()
+      // lastLine.destroy()
     }
 
     if (touch1 && touch2) {
