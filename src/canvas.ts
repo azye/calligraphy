@@ -184,7 +184,7 @@ const setupCounter = () => {
     if (touch2 && isPaint) {
       touching2 = true
       // this makes it so putting your second finger down will make a drawn line disappear
-      // lastLine.destroy()
+      lastLine.destroy()
     }
 
     if (touch1 && touch2) {
