@@ -27,17 +27,17 @@ const renderGrid = (layer: Konva.Layer) => {
   // add the shape to the layer
   layer.add(poly)
 
-  const gridCols = Math.floor((layer.hitCanvas.width - (BUFFER * 2)) / 75)
-  const gridRows = Math.floor((layer.hitCanvas.height - (BUFFER * 2)) / 75)
+  const gridCols = Math.floor((layer.hitCanvas.width - BUFFER * 2) / 75)
+  const gridRows = Math.floor((layer.hitCanvas.height - BUFFER * 2) / 75)
 
   console.log(gridCols, layer.hitCanvas.width)
 
   for (let i = 0; i < gridCols; i++) {
     var p = new Konva.Line({
       points: [
-        BUFFER + (i * ((layer.hitCanvas.width - (BUFFER * 2)) / gridCols)),
+        BUFFER + i * ((layer.hitCanvas.width - BUFFER * 2) / gridCols),
         BUFFER,
-        BUFFER + (i * ((layer.hitCanvas.width - (BUFFER * 2)) / gridCols)),
+        BUFFER + i * ((layer.hitCanvas.width - BUFFER * 2) / gridCols),
         layer.hitCanvas.height - BUFFER,
       ],
       stroke: 'black',
@@ -51,10 +51,10 @@ const renderGrid = (layer: Konva.Layer) => {
     var p = new Konva.Line({
       points: [
         BUFFER,
-        BUFFER + (i * ((layer.hitCanvas.height - (BUFFER * 2)) / gridRows)),
+        BUFFER + i * ((layer.hitCanvas.height - BUFFER * 2) / gridRows),
         layer.hitCanvas.width - BUFFER,
 
-        BUFFER + (i * ((layer.hitCanvas.height - (BUFFER * 2)) / gridRows)),
+        BUFFER + i * ((layer.hitCanvas.height - BUFFER * 2) / gridRows),
       ],
       stroke: 'black',
       strokeWidth: 2,
@@ -62,9 +62,6 @@ const renderGrid = (layer: Konva.Layer) => {
 
     layer.add(p)
   }
-
-
-  
 }
 
 const setupCounter = () => {
