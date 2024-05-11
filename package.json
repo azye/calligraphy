@@ -7,9 +7,11 @@
     "dev": "vite --host",
     "build": "tsc && vite build",
     "format": "npx prettier --write .",
-    "preview": "vite preview --port 8080"
+    "preview": "vite preview --port 8080",
+    "generate-pwa-assets": "pwa-assets-generator --preset minimal-2023 public/grid.svg"
   },
   "devDependencies": {
+    "@vite-pwa/assets-generator": "^0.2.4",
     "prettier": "^3.2.5",
     "typescript": "^5.0.2",
     "vite": "^4.4.5",

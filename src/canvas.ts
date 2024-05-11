@@ -1,5 +1,4 @@
 // @ts-nocheck
-// import './style.css'
 import Konva from 'konva'
 import { getCenter, getDistance } from './utils'
 
@@ -52,7 +51,6 @@ const renderGrid = (layer: Konva.Layer) => {
         BUFFER,
         BUFFER + i * ((layer.hitCanvas.height - BUFFER * 2) / gridRows),
         layer.hitCanvas.width - BUFFER,
-
         BUFFER + i * ((layer.hitCanvas.height - BUFFER * 2) / gridRows),
       ],
       stroke: 'black',
@@ -85,15 +83,8 @@ const setupCounter = () => {
   })
 
   var layer = new Konva.Layer()
-  var graphLayer = new Konva.Layer({
-    width: window.innerWidth,
-    height: window.innerHeight,
-  })
-
-  var paperLayer = new Konva.Layer({
-    width: window.innerWidth,
-    height: window.innerHeight,
-  })
+  var graphLayer = new Konva.Layer()
+  var paperLayer = new Konva.Layer()
 
   // order matters here
   stage.add(paperLayer)
@@ -127,19 +118,7 @@ const setupCounter = () => {
     layer.add(lastLine)
   })
 
-  stage.on('mousemove', () => {
-    if (!isdragging) {
-      return
-    }
-    var pos = layer.getRelativePointerPosition()
-    if (pos.x >= 0 && pos.y >= 0) {
-      var newPoints = lastLine.points().concat([pos.x, pos.y])
-      lastLine.points(newPoints)
-    }
-  })
-
   stage.on('touchstart', (e) => {
-    console.log('touch')
     e.evt.preventDefault()
     var touch1 = e.evt.touches[0]
     var touch2 = e.evt.touches[1]
@@ -164,6 +143,17 @@ const setupCounter = () => {
         points: [pos.x, pos.y, pos.x, pos.y],
       })
       layer.add(lastLine)
+    }
+  })
+
+  stage.on('mousemove', () => {
+    if (!isdragging) {
+      return
+    }
+    var pos = layer.getRelativePointerPosition()
+    if (pos.x >= 0 && pos.y >= 0) {
+      var newPoints = lastLine.points().concat([pos.x, pos.y])
+      lastLine.points(newPoints)
     }
   })
 
@@ -255,10 +245,11 @@ const setupCounter = () => {
     }
   })
 
-  stage.on('touchend', function (e) {
+  stage.on('mouseup touchend', function (e) {
     lastDist = 0
     lastCenter = null
     isPaint = false
+    isdragging = false
 
     var touch1 = e.evt.touches[0]
     var touch2 = e.evt.touches[1]
@@ -267,11 +258,6 @@ const setupCounter = () => {
       touching1 = false
       touching2 = false
     }
-  })
-
-  stage.on('mouseup touchend', function () {
-    isPaint = false
-    isdragging = false
   })
   
   renderGrid(graphLayer)
