@@ -186,28 +186,6 @@ const setupCounter = () => {
       dragStopped = false
     }
 
-    // if (touch1 && !touch2 && !isPaint) {
-    //   touching1 = true
-
-    //   if (touching2) {
-    //     return
-    //   }
-
-    //   isPaint = true
-    //   var pos = layer.getRelativePointerPosition()
-    //   lastLine = new Konva.Line({
-    //     stroke: 'red',
-    //     strokeWidth: 4,
-    //     globalCompositeOperation: mode === 'brush' ? 'source-over' : 'destination-out',
-    //     // round cap for smoother lines
-    //     lineCap: 'round',
-    //     lineJoin: 'round',
-    //     // add point twice, so we have some drawings even on a simple click
-    //     points: [pos.x, pos.y, pos.x, pos.y],
-    //   })
-    //   layer.add(lastLine)
-    // }
-
     if (isPaint && !touch2) {
       if (touching2) {
         return
