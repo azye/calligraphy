@@ -1,22 +1,86 @@
 // @ts-nocheck
 // import './style.css'
 import Konva from 'konva'
+import { getCenter, getDistance } from './utils'
 
 const renderGrid = (layer: Konva.Layer) => {
+  const BUFFER = 65
+
   var poly = new Konva.Line({
-    points: [23, 20, 23, 160, 70, 93, 150, 109, 290, 139, 270, 93],
-    fill: '#00D2FF',
+    points: [
+      0 + BUFFER,
+      0 + BUFFER,
+      0 + BUFFER,
+      layer.hitCanvas.height - BUFFER,
+      layer.hitCanvas.width - BUFFER,
+      layer.hitCanvas.height - BUFFER,
+      layer.hitCanvas.width - BUFFER,
+      BUFFER,
+      BUFFER,
+      BUFFER,
+    ],
     stroke: 'black',
-    strokeWidth: 5,
+    strokeWidth: 3,
     closed: true,
   })
 
   // add the shape to the layer
   layer.add(poly)
+
+  const gridCols = Math.floor((layer.hitCanvas.width - (BUFFER * 2)) / 75)
+  const gridRows = Math.floor((layer.hitCanvas.height - (BUFFER * 2)) / 75)
+
+  console.log(gridCols, layer.hitCanvas.width)
+
+  for (let i = 0; i < gridCols; i++) {
+    var p = new Konva.Line({
+      points: [
+        BUFFER + (i * ((layer.hitCanvas.width - (BUFFER * 2)) / gridCols)),
+        BUFFER,
+        BUFFER + (i * ((layer.hitCanvas.width - (BUFFER * 2)) / gridCols)),
+        layer.hitCanvas.height - BUFFER,
+      ],
+      stroke: 'black',
+      strokeWidth: 2,
+    })
+
+    layer.add(p)
+  }
+
+  for (let i = 0; i < gridRows; i++) {
+    var p = new Konva.Line({
+      points: [
+        BUFFER,
+        BUFFER + (i * ((layer.hitCanvas.height - (BUFFER * 2)) / gridRows)),
+        layer.hitCanvas.width - BUFFER,
+
+        BUFFER + (i * ((layer.hitCanvas.height - (BUFFER * 2)) / gridRows)),
+      ],
+      stroke: 'black',
+      strokeWidth: 2,
+    })
+
+    layer.add(p)
+  }
+
+
+  
 }
 
 const setupCounter = () => {
   Konva.hitOnDragEnabled = true
+
+  var lastCenter = null
+  var lastDist = 0
+  var dragStopped = false
+  var isPaint = false
+  var mode = 'brush'
+  var lastLine
+
+  var touching1 = false
+  var touching2 = false
+
+  var isdragging = false
 
   // first we need Konva core things: stage and layer
   var stage = new Konva.Stage({
@@ -30,47 +94,33 @@ const setupCounter = () => {
     width: window.innerWidth,
     height: window.innerHeight,
   })
-  stage.add(layer)
+
+  var paperLayer = new Konva.Layer({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  })
+
+  // order matters here
+  stage.add(paperLayer)
   stage.add(graphLayer)
+  stage.add(layer)
 
   var rect = new Konva.Rect({
-    fill: 'grey',
+    fill: '#f9f5ef',
     x: 0,
     y: 0,
     width: window.innerWidth,
     height: window.innerHeight,
   })
 
-  layer.add(rect)
-
-  function getDistance(p1, p2) {
-    return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2))
-  }
-
-  function getCenter(p1, p2) {
-    return {
-      x: (p1.x + p2.x) / 2,
-      y: (p1.y + p2.y) / 2,
-    }
-  }
-  var lastCenter = null
-  var lastDist = 0
-  var dragStopped = false
-  var isPaint = false
-  var mode = 'brush'
-  var lastLine
-
-  var touching1 = false
-  var touching2 = false
-
-  var isdragging = false
+  paperLayer.add(rect)
 
   stage.on('mousedown', () => {
     isdragging = true
 
     var pos = layer.getRelativePointerPosition()
     lastLine = new Konva.Line({
-      stroke: '#df4b26',
+      stroke: 'blue',
       strokeWidth: 4 / stage.scaleX(),
       globalCompositeOperation: mode === 'brush' ? 'source-over' : 'destination-out',
       // round cap for smoother lines
@@ -117,11 +167,10 @@ const setupCounter = () => {
         return
       }
 
-      console.log('added')
       isPaint = true
       var pos = layer.getRelativePointerPosition()
       lastLine = new Konva.Line({
-        stroke: '#df4b26',
+        stroke: 'red',
         strokeWidth: 4,
         globalCompositeOperation: mode === 'brush' ? 'source-over' : 'destination-out',
         // round cap for smoother lines
@@ -139,7 +188,7 @@ const setupCounter = () => {
       }
       var pos = layer.getRelativePointerPosition()
 
-      if (pos.x >= 0 && pos.y >= 0) {
+      if (pos.x >= 0 && pos.y >= 0 && pos.x < layer.hitCanvas.width && pos.y < layer.hitCanvas.height) {
         var newPoints = lastLine.points().concat([pos.x, pos.y])
         lastLine.points(newPoints)
       }
@@ -147,7 +196,8 @@ const setupCounter = () => {
 
     if (touch2 && isPaint) {
       touching2 = true
-      // lastLine.destroy()
+      // this makes it so putting your second finger down will make a drawn line disappear
+      lastLine.destroy()
     }
 
     if (touch1 && touch2) {
@@ -175,7 +225,6 @@ const setupCounter = () => {
         return
       }
       var newCenter = getCenter(p1, p2)
-
       var dist = getDistance(p1, p2)
 
       if (!lastDist) {

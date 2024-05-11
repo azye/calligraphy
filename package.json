@@ -8,7 +8,6 @@
     "build": "tsc && vite build",
     "format": "npx prettier --write .",
     "preview": "vite preview --port 8080"
-
   },
   "devDependencies": {
     "prettier": "^3.2.5",
