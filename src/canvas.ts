@@ -30,7 +30,6 @@ const renderGrid = (layer: Konva.Layer) => {
   const gridCols = Math.floor((layer.hitCanvas.width - BUFFER * 2) / 75)
   const gridRows = Math.floor((layer.hitCanvas.height - BUFFER * 2) / 75)
 
-  console.log(gridCols, layer.hitCanvas.width)
 
   for (let i = 0; i < gridCols; i++) {
     var p = new Konva.Line({
@@ -73,10 +72,9 @@ const setupCounter = () => {
   var isPaint = false
   var mode = 'brush'
   var lastLine
-
+  // touching1 and touching2 are used to prevent lines from being drawn on finger lift
   var touching1 = false
   var touching2 = false
-
   var isdragging = false
 
   // first we need Konva core things: stage and layer
@@ -138,11 +136,6 @@ const setupCounter = () => {
       var newPoints = lastLine.points().concat([pos.x, pos.y])
       lastLine.points(newPoints)
     }
-    // console.log(pos)
-  })
-
-  stage.on('mouseup', () => {
-    isdragging = false
   })
 
   stage.on('touchstart', (e) => {
@@ -150,8 +143,9 @@ const setupCounter = () => {
     e.evt.preventDefault()
     var touch1 = e.evt.touches[0]
     var touch2 = e.evt.touches[1]
+    var pos = layer.getRelativePointerPosition()
 
-    if (touch1 && !touch2 && !isPaint) {
+    if (touch1 && !touch2 && !isPaint && pos.x >= 0 && pos.y >= 0 && pos.x < layer.hitCanvas.width && pos.y < layer.hitCanvas.height) {
       touching1 = true
 
       if (touching2) {
@@ -159,7 +153,6 @@ const setupCounter = () => {
       }
 
       isPaint = true
-      var pos = layer.getRelativePointerPosition()
       lastLine = new Konva.Line({
         stroke: 'red',
         strokeWidth: 4,
@@ -278,7 +271,9 @@ const setupCounter = () => {
 
   stage.on('mouseup touchend', function () {
     isPaint = false
+    isdragging = false
   })
+  
   renderGrid(graphLayer)
 }
 
