@@ -3,40 +3,43 @@ import Konva from 'konva'
 import { getCenter, getDistance } from './utils'
 
 const renderGrid = (layer: Konva.Layer) => {
-  const BUFFER = 65
+  const BUFFER = 65 // min margin buffer size
+  const CELL_SIZE = 75
+
+  const gridCols = Math.floor((layer.hitCanvas.width - BUFFER * 2) / 75)
+  const gridRows = Math.floor((layer.hitCanvas.height - BUFFER * 2) / 75)
+
+  const startX = (layer.hitCanvas.width - (gridCols * CELL_SIZE)) / 2
+  const startY = (layer.hitCanvas.height - (gridRows * CELL_SIZE)) / 2
+
 
   var poly = new Konva.Line({
     points: [
-      0 + BUFFER,
-      0 + BUFFER,
-      0 + BUFFER,
-      layer.hitCanvas.height - BUFFER,
-      layer.hitCanvas.width - BUFFER,
-      layer.hitCanvas.height - BUFFER,
-      layer.hitCanvas.width - BUFFER,
-      BUFFER,
-      BUFFER,
-      BUFFER,
+      startX,
+      startY,
+      layer.hitCanvas.width - startX,
+      startY,
+      layer.hitCanvas.width - startX,
+      layer.hitCanvas.height - startY,
+      startX,
+      layer.hitCanvas.height - startY,
+      startX,
+      startY,
     ],
     stroke: 'black',
     strokeWidth: 3,
     closed: true,
   })
 
-  // add the shape to the layer
   layer.add(poly)
 
-  const gridCols = Math.floor((layer.hitCanvas.width - BUFFER * 2) / 75)
-  const gridRows = Math.floor((layer.hitCanvas.height - BUFFER * 2) / 75)
-
-
-  for (let i = 0; i < gridCols; i++) {
+  for (let i = 1; i < gridCols; i++) {
     var p = new Konva.Line({
       points: [
-        BUFFER + i * ((layer.hitCanvas.width - BUFFER * 2) / gridCols),
-        BUFFER,
-        BUFFER + i * ((layer.hitCanvas.width - BUFFER * 2) / gridCols),
-        layer.hitCanvas.height - BUFFER,
+        startX + i * CELL_SIZE,
+        startY,
+        startX + i * CELL_SIZE,
+        layer.hitCanvas.height - startY,
       ],
       stroke: 'black',
       strokeWidth: 2,
@@ -45,13 +48,13 @@ const renderGrid = (layer: Konva.Layer) => {
     layer.add(p)
   }
 
-  for (let i = 0; i < gridRows; i++) {
+  for (let i = 1; i < gridRows; i++) {
     var p = new Konva.Line({
       points: [
-        BUFFER,
-        BUFFER + i * ((layer.hitCanvas.height - BUFFER * 2) / gridRows),
-        layer.hitCanvas.width - BUFFER,
-        BUFFER + i * ((layer.hitCanvas.height - BUFFER * 2) / gridRows),
+        startX,
+        startY + i * CELL_SIZE,
+        layer.hitCanvas.width - startX,
+        startY + i * CELL_SIZE,
       ],
       stroke: 'black',
       strokeWidth: 2,
@@ -183,7 +186,7 @@ const setupCounter = () => {
 
     if (touch2 && isPaint) {
       touching2 = true
-      // this makes it so putting your second finger down will make a drawn line disappear
+      // this makes it so putting your second finger down wont produce dots
       lastLine.destroy()
     }
 
