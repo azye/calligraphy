@@ -7,8 +7,7 @@
 }
 
 .navbar-burger {
-  display: flex;
-  position: absolute;
+  display: block;
   z-index: 10;
   color: black;
 
@@ -20,10 +19,17 @@
 #icon-menu {
   color: black;
   z-index: 10;
-  height: 10px;
-  width: 10px;
-  position: absolute;
-  padding-left: 100px;
-  padding-top: 10px;
   display: none;
+}
+
+#header-menu {
+  position: absolute;
+  width: 100%;
+  display: flex;
+}
+
+.icon-menu-icon {
+  margin: auto;
+  padding: 6px;
+  cursor: pointer;
 }
