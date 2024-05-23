@@ -3,7 +3,7 @@ import Konva from 'konva'
 import { getCenter, getDistance } from './utils'
 
 const renderGrid = (layer: Konva.Layer) => {
-  const BUFFER = 65 // min margin buffer size
+  const BUFFER = 20 // min margin buffer size
   const CELL_SIZE = 75
 
   const gridCols = Math.floor((layer.hitCanvas.width - BUFFER * 2) / 75)
