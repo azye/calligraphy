@@ -19,6 +19,7 @@
     "vite-plugin-pwa": "^0.20.0"
   },
   "dependencies": {
+    "bulma": "^1.0.1",
     "konva": "^9.3.6"
   }
 }
