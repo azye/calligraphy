@@ -66,7 +66,8 @@ const renderGrid = (layer: Konva.Layer) => {
 
 const setupCounter = () => {
   Konva.hitOnDragEnabled = true
-
+  const state = localStorage.getItem('canvas-grid-state')
+  const saveEnabled = localStorage.getItem('save-enabled') === 'true'
   var lastCenter = null
   var lastDist = 0
   var dragStopped = false
@@ -77,21 +78,28 @@ const setupCounter = () => {
   var touching1 = false
   var touching2 = false
   var isdragging = false
-
-  // first we need Konva core things: stage and layer
-  var stage = new Konva.Stage({
-    container: 'container',
-    width: window.innerWidth,
-    height: window.innerHeight,
-  })
-
+  let stage
   var layer = new Konva.Layer()
   var graphLayer = new Konva.Layer()
   var paperLayer = new Konva.Layer()
+  
+  if (saveEnabled && state) {
+    stage = Konva.Node.create(state, 'container')
+    stage.x(0)
+    stage.y(0)
+    stage.scaleX(1)
+    stage.scaleY(1)
+    // todo: restore the drawing layer so that we can erase
+  } else {
+    stage = new Konva.Stage({
+      container: 'container',
+      width: window.innerWidth,
+      height: window.innerHeight,
+    })
 
-  // order matters here
-  stage.add(paperLayer)
-  stage.add(graphLayer)
+    stage.add(paperLayer)
+    stage.add(graphLayer)
+  }
   stage.add(layer)
 
   var rect = new Konva.Rect({
@@ -253,17 +261,15 @@ const setupCounter = () => {
     lastCenter = null
     isPaint = false
     isdragging = false
-
-    var touch1 = e.evt.touches[0]
-    var touch2 = e.evt.touches[1]
-
-    if (!touch1 && !touch2) {
-      touching1 = false
-      touching2 = false
-    }
+    touching1 = false
+    touching2 = false
   })
   
   renderGrid(graphLayer)
+  window.onbeforeunload = function(){
+    saveEnabled && localStorage.setItem('canvas-grid-state', stage.toJSON())
+    !saveEnabled && this.localStorage.removeItem('canvas-grid-state')
+ }
 }
 
 setupCounter()
