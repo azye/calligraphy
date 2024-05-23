@@ -14,8 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
       // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
       el.classList.toggle('is-active')
       $target?.classList.toggle('is-active')
-      const menuDisplay = document.getElementById('icon-menu').style.display
-      document.getElementById('icon-menu').style.display = menuDisplay === 'inline' ? 'none' : 'inline'
+      const menuDisplay = document?.getElementById('icon-menu')?.style.display
+      document.getElementById('icon-menu')!.style.display = menuDisplay === 'inline' ? 'none' : 'inline'
     })
   })
 })
