@@ -1,6 +1,8 @@
 // @ts-nocheck
 import Konva from 'konva'
 import { getCenter, getDistance } from './utils'
+import { Label } from 'konva/lib/shapes/Label'
+import { Layer } from 'konva/lib/Layer'
 
 const renderGrid = (layer: Konva.Layer) => {
   const BUFFER = 20 // min margin buffer size
@@ -52,6 +54,8 @@ const renderGrid = (layer: Konva.Layer) => {
     layer.add(p)
   }
 }
+let stage
+let drawingLayer
 
 const setupCounter = () => {
   Konva.hitOnDragEnabled = true
@@ -67,8 +71,8 @@ const setupCounter = () => {
   var touching1 = false
   var touching2 = false
   var isdragging = false
-  let stage
-  var layer = new Konva.Layer()
+  // let stage
+  drawingLayer = new Konva.Layer({ name: 'drawing-layer' })
   var graphLayer = new Konva.Layer()
   var paperLayer = new Konva.Layer()
 
@@ -89,7 +93,7 @@ const setupCounter = () => {
     stage.add(paperLayer)
     stage.add(graphLayer)
   }
-  stage.add(layer)
+  stage.add(drawingLayer)
 
   var rect = new Konva.Rect({
     fill: '#f9f5ef',
@@ -104,9 +108,9 @@ const setupCounter = () => {
   stage.on('mousedown', () => {
     isdragging = true
 
-    var pos = layer.getRelativePointerPosition()
+    var pos = drawingLayer.getRelativePointerPosition()
     lastLine = new Konva.Line({
-      stroke: 'blue',
+      stroke: '#3a4045',
       strokeWidth: 4 / stage.scaleX(),
       globalCompositeOperation: mode === 'brush' ? 'source-over' : 'destination-out',
       // round cap for smoother lines
@@ -115,14 +119,14 @@ const setupCounter = () => {
       // add point twice, so we have some drawings even on a simple click
       points: [pos.x, pos.y, pos.x, pos.y],
     })
-    layer.add(lastLine)
+    drawingLayer.add(lastLine)
   })
 
   stage.on('touchstart', (e) => {
     e.evt.preventDefault()
     var touch1 = e.evt.touches[0]
     var touch2 = e.evt.touches[1]
-    var pos = layer.getRelativePointerPosition()
+    var pos = drawingLayer.getRelativePointerPosition()
 
     if (
       touch1 &&
@@ -130,8 +134,8 @@ const setupCounter = () => {
       !isPaint &&
       pos.x >= 0 &&
       pos.y >= 0 &&
-      pos.x < layer.hitCanvas.width &&
-      pos.y < layer.hitCanvas.height
+      pos.x < drawingLayer.hitCanvas.width &&
+      pos.y < drawingLayer.hitCanvas.height
     ) {
       touching1 = true
 
@@ -150,7 +154,7 @@ const setupCounter = () => {
         // add point twice, so we have some drawings even on a simple click
         points: [pos.x, pos.y, pos.x, pos.y],
       })
-      layer.add(lastLine)
+      drawingLayer.add(lastLine)
     }
   })
 
@@ -158,7 +162,7 @@ const setupCounter = () => {
     if (!isdragging) {
       return
     }
-    var pos = layer.getRelativePointerPosition()
+    var pos = drawingLayer.getRelativePointerPosition()
     if (pos.x >= 0 && pos.y >= 0) {
       var newPoints = lastLine.points().concat([pos.x, pos.y])
       lastLine.points(newPoints)
@@ -181,9 +185,9 @@ const setupCounter = () => {
       if (touching2) {
         return
       }
-      var pos = layer.getRelativePointerPosition()
+      var pos = drawingLayer.getRelativePointerPosition()
 
-      if (pos.x >= 0 && pos.y >= 0 && pos.x < layer.hitCanvas.width && pos.y < layer.hitCanvas.height) {
+      if (pos.x >= 0 && pos.y >= 0 && pos.x < drawingLayer.hitCanvas.width && pos.y < drawingLayer.hitCanvas.height) {
         var newPoints = lastLine.points().concat([pos.x, pos.y])
         lastLine.points(newPoints)
       }
@@ -270,3 +274,13 @@ const setupCounter = () => {
 }
 
 setupCounter()
+
+// declare var stage;
+document.addEventListener('DOMContentLoaded', () => {
+  const deleteIconButton = document?.getElementById('delete-icon-button')
+  deleteIconButton?.addEventListener('click', () => {
+    // todo: add confirmation modal
+    drawingLayer.removeChildren()
+    // todo: close menu
+  })
+})
