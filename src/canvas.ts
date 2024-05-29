@@ -266,6 +266,42 @@ const setupCounter = () => {
     touching2 = false
   })
 
+  var scaleBy = 1.05
+  stage.on('wheel', (e) => {
+    // stop default scrolling
+    e.evt.preventDefault()
+
+    if (e.evt.ctrlKey) {
+      var oldScale = stage.scaleX()
+      var pointer = stage.getPointerPosition()
+
+      var mousePointTo = {
+        x: (pointer.x - stage.x()) / oldScale,
+        y: (pointer.y - stage.y()) / oldScale,
+      }
+
+      // how to scale? Zoom in? Or zoom out?
+      let direction = e.evt.deltaY > 0 ? -1 : 1
+
+      var newScale = direction > 0 ? oldScale * scaleBy : oldScale / scaleBy
+
+      stage.scale({ x: newScale, y: newScale })
+
+      var newPos = {
+        x: pointer.x - mousePointTo.x * newScale,
+        y: pointer.y - mousePointTo.y * newScale,
+      }
+      stage.position(newPos)
+    } else {
+      var newPos = {
+        x: stage.x() + e.evt.deltaX,
+        y: stage.y() + e.evt.deltaY,
+      }
+
+      stage.position(newPos)
+    }
+  })
+
   renderGrid(graphLayer)
   window.onbeforeunload = function () {
     saveEnabled && localStorage.setItem('canvas-grid-state', stage.toJSON())
@@ -281,6 +317,11 @@ document.addEventListener('DOMContentLoaded', () => {
   deleteIconButton?.addEventListener('click', () => {
     // todo: add confirmation modal
     drawingLayer.removeChildren()
+    stage.x(0)
+    stage.y(0)
+    stage.scaleY(1)
+    stage.scaleX(1)
+
     // todo: close menu
   })
 })
