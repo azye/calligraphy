@@ -72,9 +72,9 @@ const setupCounter = () => {
   var touching2 = false
   var isdragging = false
   // let stage
-  drawingLayer = new Konva.Layer({ name: 'drawing-layer' })
-  var graphLayer = new Konva.Layer()
-  var paperLayer = new Konva.Layer()
+  // drawingLayer = new Konva.Layer({ name: 'drawing-layer' })
+  let graphLayer
+  let paperLayer
 
   if (saveEnabled && state) {
     stage = Konva.Node.create(state, 'container')
@@ -82,28 +82,32 @@ const setupCounter = () => {
     stage.y(0)
     stage.scaleX(1)
     stage.scaleY(1)
-    // todo: restore the drawing layer so that we can erase
+    graphLayer = stage.children[0]
+    paperLayer = stage.children[1]
+    drawingLayer = stage.children[2]
+    stage.removeChildren()
   } else {
     stage = new Konva.Stage({
       container: 'container',
       width: window.innerWidth,
       height: window.innerHeight,
     })
+    drawingLayer = new Konva.Layer({ name: 'drawing-layer' })
+    graphLayer = new Konva.Layer({ name: 'graph-layer' })
+    paperLayer = new Konva.Layer({ name: 'paper-layer' })
+    var rect = new Konva.Rect({
+      fill: '#f9f5ef',
+      x: 0,
+      y: 0,
+      width: window.innerWidth,
+      height: window.innerHeight,
+    })
 
-    stage.add(paperLayer)
-    stage.add(graphLayer)
+    paperLayer.add(rect)
   }
+  stage.add(paperLayer)
+  stage.add(graphLayer)
   stage.add(drawingLayer)
-
-  var rect = new Konva.Rect({
-    fill: '#f9f5ef',
-    x: 0,
-    y: 0,
-    width: window.innerWidth,
-    height: window.innerHeight,
-  })
-
-  paperLayer.add(rect)
 
   stage.on('mousedown', () => {
     isdragging = true
