@@ -269,6 +269,7 @@ const setupCanvas = () => {
     isPaint = false
     isdragging = false
     touching2 = false
+    saveEnabled && localStorage.setItem('canvas-grid-state', stage.toJSON())
   })
 
   const scaleBy = 1.05
@@ -289,7 +290,6 @@ const setupCanvas = () => {
         y: (pointer.y - stage.y()) / oldScale,
       }
 
-      // how to scale? Zoom in? Or zoom out?
       const direction = e.evt.deltaY > 0 ? -1 : 1
 
       const newScale = direction > 0 ? oldScale * scaleBy : oldScale / scaleBy
@@ -316,9 +316,14 @@ const setupCanvas = () => {
 
 setupCanvas()
 
-window.onbeforeunload = function () {
+window.onbeforeunload = () => {
   saveEnabled && localStorage.setItem('canvas-grid-state', stage.toJSON())
   !saveEnabled && localStorage.removeItem('canvas-grid-state')
+}
+
+window.onfocus = () => {
+  // todo: optimize this so refocusing isnt as slow
+  setupCanvas()
 }
 
 // declare let stage;
