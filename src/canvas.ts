@@ -1,8 +1,5 @@
-// @ts-nocheck
 import Konva from 'konva'
-import { getCenter, getDistance } from './utils'
-import { Label } from 'konva/lib/shapes/Label'
-import { Layer } from 'konva/lib/Layer'
+import { Point, getCenter, getDistance } from './utils'
 
 const renderGrid = (layer: Konva.Layer) => {
   const BUFFER = 20 // min margin buffer size
@@ -14,7 +11,7 @@ const renderGrid = (layer: Konva.Layer) => {
   const startX = (layer.hitCanvas.width - gridCols * CELL_SIZE) / 2
   const startY = (layer.hitCanvas.height - gridRows * CELL_SIZE) / 2
 
-  var poly = new Konva.Line({
+  const poly = new Konva.Line({
     points: [
       startX,
       startY,
@@ -35,7 +32,7 @@ const renderGrid = (layer: Konva.Layer) => {
   layer.add(poly)
 
   for (let i = 1; i < gridCols; i++) {
-    var p = new Konva.Line({
+    const p = new Konva.Line({
       points: [startX + i * CELL_SIZE, startY, startX + i * CELL_SIZE, layer.hitCanvas.height - startY],
       stroke: 'black',
       strokeWidth: 2,
@@ -45,7 +42,7 @@ const renderGrid = (layer: Konva.Layer) => {
   }
 
   for (let i = 1; i < gridRows; i++) {
-    var p = new Konva.Line({
+    const p = new Konva.Line({
       points: [startX, startY + i * CELL_SIZE, layer.hitCanvas.width - startX, startY + i * CELL_SIZE],
       stroke: 'black',
       strokeWidth: 2,
@@ -54,25 +51,24 @@ const renderGrid = (layer: Konva.Layer) => {
     layer.add(p)
   }
 }
-let stage
-let drawingLayer
 
-const setupCounter = () => {
+let stage: Konva.Stage
+let drawingLayer: Konva.Layer
+let saveEnabled: boolean = true
+const mode = 'brush'
+
+const setupCanvas = () => {
   Konva.hitOnDragEnabled = true
   const state = localStorage.getItem('canvas-grid-state')
-  const saveEnabled = localStorage.getItem('save-enabled') === 'true'
-  var lastCenter = null
-  var lastDist = 0
-  var dragStopped = false
-  var isPaint = false
-  var mode = 'brush'
-  var lastLine
-  // touching1 and touching2 are used to prevent lines from being drawn on finger lift
-  var touching1 = false
-  var touching2 = false
-  var isdragging = false
-  // let stage
-  // drawingLayer = new Konva.Layer({ name: 'drawing-layer' })
+  saveEnabled = saveEnabled || localStorage.getItem('save-enabled') === 'true'
+  let lastCenter: Point | null
+  let lastDist = 0
+  let dragStopped = false
+  let isPaint = false
+  let lastLine: Konva.Line
+  // touching2 is used to prevent lines from being drawn on finger lift
+  let touching2 = false
+  let isdragging = false
   let graphLayer
   let paperLayer
 
@@ -95,7 +91,7 @@ const setupCounter = () => {
     drawingLayer = new Konva.Layer({ name: 'drawing-layer' })
     graphLayer = new Konva.Layer({ name: 'graph-layer' })
     paperLayer = new Konva.Layer({ name: 'paper-layer' })
-    var rect = new Konva.Rect({
+    const rect = new Konva.Rect({
       fill: '#f9f5ef',
       x: 0,
       y: 0,
@@ -111,28 +107,30 @@ const setupCounter = () => {
 
   stage.on('mousedown', () => {
     isdragging = true
-
-    var pos = drawingLayer.getRelativePointerPosition()
-    lastLine = new Konva.Line({
-      stroke: '#3a4045',
-      strokeWidth: 4 / stage.scaleX(),
-      globalCompositeOperation: mode === 'brush' ? 'source-over' : 'destination-out',
-      // round cap for smoother lines
-      lineCap: 'round',
-      lineJoin: 'round',
-      // add point twice, so we have some drawings even on a simple click
-      points: [pos.x, pos.y, pos.x, pos.y],
-    })
-    drawingLayer.add(lastLine)
+    const pos = drawingLayer.getRelativePointerPosition()
+    if (pos) {
+      lastLine = new Konva.Line({
+        stroke: '#3a4045',
+        strokeWidth: 4 / stage.scaleX(),
+        globalCompositeOperation: mode === 'brush' ? 'source-over' : 'destination-out',
+        // round cap for smoother lines
+        lineCap: 'round',
+        lineJoin: 'round',
+        // add point twice, so we have some drawings even on a simple click
+        points: [pos.x, pos.y, pos.x, pos.y],
+      })
+      drawingLayer.add(lastLine)
+    }
   })
 
   stage.on('touchstart', (e) => {
     e.evt.preventDefault()
-    var touch1 = e.evt.touches[0]
-    var touch2 = e.evt.touches[1]
-    var pos = drawingLayer.getRelativePointerPosition()
+    const touch1 = e.evt.touches[0]
+    const touch2 = e.evt.touches[1]
+    const pos = drawingLayer.getRelativePointerPosition()
 
     if (
+      pos &&
       touch1 &&
       !touch2 &&
       !isPaint &&
@@ -141,8 +139,6 @@ const setupCounter = () => {
       pos.x < drawingLayer.hitCanvas.width &&
       pos.y < drawingLayer.hitCanvas.height
     ) {
-      touching1 = true
-
       if (touching2) {
         return
       }
@@ -166,21 +162,21 @@ const setupCounter = () => {
     if (!isdragging) {
       return
     }
-    var pos = drawingLayer.getRelativePointerPosition()
-    if (pos.x >= 0 && pos.y >= 0) {
-      var newPoints = lastLine.points().concat([pos.x, pos.y])
+    const pos = drawingLayer.getRelativePointerPosition()
+    if (pos && pos.x >= 0 && pos.y >= 0) {
+      const newPoints = lastLine.points().concat([pos.x, pos.y])
       lastLine.points(newPoints)
     }
   })
 
   stage.on('touchmove', function (e) {
     e.evt.preventDefault()
-    var touch1 = e.evt.touches[0]
-    var touch2 = e.evt.touches[1]
+    const touch1 = e.evt.touches[0]
+    const touch2 = e.evt.touches[1]
 
     // we need to restore dragging, if it was cancelled by multi-touch
     if (touch1 && !touch2 && !stage.isDragging() && dragStopped) {
-      touching1 = true
+      // touching1 = true
       stage.startDrag()
       dragStopped = false
     }
@@ -189,10 +185,16 @@ const setupCounter = () => {
       if (touching2) {
         return
       }
-      var pos = drawingLayer.getRelativePointerPosition()
+      const pos = drawingLayer.getRelativePointerPosition()
 
-      if (pos.x >= 0 && pos.y >= 0 && pos.x < drawingLayer.hitCanvas.width && pos.y < drawingLayer.hitCanvas.height) {
-        var newPoints = lastLine.points().concat([pos.x, pos.y])
+      if (
+        pos &&
+        pos.x >= 0 &&
+        pos.y >= 0 &&
+        pos.x < drawingLayer.hitCanvas.width &&
+        pos.y < drawingLayer.hitCanvas.height
+      ) {
+        const newPoints = lastLine.points().concat([pos.x, pos.y])
         lastLine.points(newPoints)
       }
     }
@@ -205,7 +207,7 @@ const setupCounter = () => {
 
     if (touch1 && touch2) {
       touching2 = true
-      touching1 = true
+      // touching1 = true
       isPaint = false
       // if the stage was under Konva's drag&drop
       // we need to stop it, and implement our own pan logic with two pointers
@@ -214,11 +216,11 @@ const setupCounter = () => {
         stage.stopDrag()
       }
 
-      var p1 = {
+      const p1 = {
         x: touch1.clientX,
         y: touch1.clientY,
       }
-      var p2 = {
+      const p2 = {
         x: touch2.clientX,
         y: touch2.clientY,
       }
@@ -227,29 +229,29 @@ const setupCounter = () => {
         lastCenter = getCenter(p1, p2)
         return
       }
-      var newCenter = getCenter(p1, p2)
-      var dist = getDistance(p1, p2)
+      const newCenter = getCenter(p1, p2)
+      const dist = getDistance(p1, p2)
 
       if (!lastDist) {
         lastDist = dist
       }
 
       // local coordinates of center point
-      var pointTo = {
+      const pointTo = {
         x: (newCenter.x - stage.x()) / stage.scaleX(),
         y: (newCenter.y - stage.y()) / stage.scaleY(),
       }
 
-      var scale = stage.scaleX() * (dist / lastDist)
+      const scale = stage.scaleX() * (dist / lastDist)
 
       stage.scaleX(scale)
       stage.scaleY(scale)
 
       // calculate new position of the stage
-      var dx = newCenter.x - lastCenter.x
-      var dy = newCenter.y - lastCenter.y
+      const dx = newCenter.x - lastCenter.x
+      const dy = newCenter.y - lastCenter.y
 
-      var newPos = {
+      const newPos = {
         x: newCenter.x - pointTo.x * scale + dx,
         y: newCenter.y - pointTo.y * scale + dy,
       }
@@ -261,43 +263,46 @@ const setupCounter = () => {
     }
   })
 
-  stage.on('mouseup touchend', function (e) {
+  stage.on('mouseup touchend', () => {
     lastDist = 0
     lastCenter = null
     isPaint = false
     isdragging = false
-    touching1 = false
     touching2 = false
   })
 
-  var scaleBy = 1.05
+  const scaleBy = 1.05
   stage.on('wheel', (e) => {
     // stop default scrolling
     e.evt.preventDefault()
 
     if (e.evt.ctrlKey) {
-      var oldScale = stage.scaleX()
-      var pointer = stage.getPointerPosition()
+      const oldScale = stage.scaleX()
+      const pointer = stage.getPointerPosition()
 
-      var mousePointTo = {
+      if (!pointer) {
+        return
+      }
+
+      const mousePointTo = {
         x: (pointer.x - stage.x()) / oldScale,
         y: (pointer.y - stage.y()) / oldScale,
       }
 
       // how to scale? Zoom in? Or zoom out?
-      let direction = e.evt.deltaY > 0 ? -1 : 1
+      const direction = e.evt.deltaY > 0 ? -1 : 1
 
-      var newScale = direction > 0 ? oldScale * scaleBy : oldScale / scaleBy
+      const newScale = direction > 0 ? oldScale * scaleBy : oldScale / scaleBy
 
       stage.scale({ x: newScale, y: newScale })
 
-      var newPos = {
+      const newPos = {
         x: pointer.x - mousePointTo.x * newScale,
         y: pointer.y - mousePointTo.y * newScale,
       }
       stage.position(newPos)
     } else {
-      var newPos = {
+      const newPos = {
         x: stage.x() + e.evt.deltaX,
         y: stage.y() + e.evt.deltaY,
       }
@@ -307,15 +312,16 @@ const setupCounter = () => {
   })
 
   renderGrid(graphLayer)
-  window.onbeforeunload = function () {
-    saveEnabled && localStorage.setItem('canvas-grid-state', stage.toJSON())
-    !saveEnabled && this.localStorage.removeItem('canvas-grid-state')
-  }
 }
 
-setupCounter()
+setupCanvas()
 
-// declare var stage;
+window.onbeforeunload = function () {
+  saveEnabled && localStorage.setItem('canvas-grid-state', stage.toJSON())
+  !saveEnabled && localStorage.removeItem('canvas-grid-state')
+}
+
+// declare let stage;
 document.addEventListener('DOMContentLoaded', () => {
   const deleteIconButton = document?.getElementById('delete-icon-button')
   deleteIconButton?.addEventListener('click', () => {
