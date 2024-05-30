@@ -12,9 +12,7 @@
     "generate-pwa-assets": "pwa-assets-generator --preset minimal-2023 public/grid.svg"
   },
   "devDependencies": {
-    "@eslint/js": "^9.3.0",
     "@vite-pwa/assets-generator": "^0.2.4",
-    "eslint": "^9.3.0",
     "globals": "^15.3.0",
     "prettier": "^3.2.5",
     "sass": "^1.77.2",
