@@ -111,7 +111,7 @@ const setupCanvas = () => {
     if (pos) {
       lastLine = new Konva.Line({
         stroke: '#3a4045',
-        strokeWidth: 4 / stage.scaleX(),
+        strokeWidth: 4,
         globalCompositeOperation: mode === 'brush' ? 'source-over' : 'destination-out',
         // round cap for smoother lines
         lineCap: 'round',
