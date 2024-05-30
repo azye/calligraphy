@@ -18,16 +18,15 @@
   color: black;
   z-index: 10;
   display: none;
+  margin: auto;
 }
 
 #header-menu {
   position: absolute;
-  width: 100%;
   display: flex;
 }
 
 .icon-menu-icon {
-  margin: auto;
-  padding: 6px;
+  padding-left: 8px;
   cursor: pointer;
 }
