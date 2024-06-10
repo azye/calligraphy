@@ -337,7 +337,7 @@ const undo = () => {
     return
   }
 
-  canvasStateHistory[historyIndex].remove()
+  canvasStateHistory[historyIndex].destroy()
   historyIndex--
 }
 
@@ -346,7 +346,7 @@ const redo = () => {
     console.log('nothing to redo')
     return
   }
-  drawingLayer.add(canvasStateHistory[++historyIndex])
+  drawingLayer.add(Konva.Line.create(canvasStateHistory[++historyIndex]))
 }
 
 setupCanvas()
@@ -358,7 +358,7 @@ window.onbeforeunload = () => {
 
 window.onfocus = () => {
   // todo: optimize this so refocusing isnt as slow
-  setupCanvas()
+  // setupCanvas()
 }
 
 window.onblur = () => {
