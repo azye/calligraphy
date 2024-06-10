@@ -56,6 +56,9 @@ let stage: Konva.Stage
 let drawingLayer: Konva.Layer
 let saveEnabled: boolean = true
 const mode = 'brush'
+let canvasStateHistory: Konva.Line[] = []
+let historyIndex = -1
+let lastLine: Konva.Line
 
 const setupCanvas = () => {
   Konva.hitOnDragEnabled = true
@@ -65,7 +68,6 @@ const setupCanvas = () => {
   let lastDist = 0
   let dragStopped = false
   let isPaint = false
-  let lastLine: Konva.Line
   // touching2 is used to prevent lines from being drawn on finger lift
   let touching2 = false
   let isdragging = false
@@ -74,13 +76,13 @@ const setupCanvas = () => {
 
   if (saveEnabled && state) {
     stage = Konva.Node.create(state, 'container')
-    stage.x(0)
-    stage.y(0)
-    stage.scaleX(1)
-    stage.scaleY(1)
+    // stage.x(0)
+    // stage.y(0)
+    // stage.scaleX(1)
+    // stage.scaleY(1)
     graphLayer = stage.children[0]
     paperLayer = stage.children[1]
-    drawingLayer = stage.children[2]
+    drawingLayer = stage.children.length >= 3 ? stage.children[2] : new Konva.Layer({ name: 'drawing-layer' })
     stage.removeChildren()
   } else {
     stage = new Konva.Stage({
@@ -106,6 +108,7 @@ const setupCanvas = () => {
   stage.add(drawingLayer)
 
   stage.on('mousedown', () => {
+    // updateCanvasState()
     isdragging = true
     const pos = drawingLayer.getRelativePointerPosition()
     if (pos) {
@@ -119,12 +122,14 @@ const setupCanvas = () => {
         // add point twice, so we have some drawings even on a simple click
         points: [pos.x, pos.y, pos.x, pos.y],
       })
+      isPaint = true
       drawingLayer.add(lastLine)
     }
   })
 
   stage.on('touchstart', (e) => {
     e.evt.preventDefault()
+    // updateCanvasState()
     const touch1 = e.evt.touches[0]
     const touch2 = e.evt.touches[1]
     const pos = drawingLayer.getRelativePointerPosition()
@@ -264,12 +269,13 @@ const setupCanvas = () => {
   })
 
   stage.on('mouseup touchend', () => {
+    if (isPaint) updateCanvasState()
     lastDist = 0
     lastCenter = null
     isPaint = false
     isdragging = false
     touching2 = false
-    saveEnabled && localStorage.setItem('canvas-grid-state', stage.toJSON())
+    // saveEnabled && localStorage.setItem('canvas-grid-state', stage.toJSON())
   })
 
   const scaleBy = 1.05
@@ -313,6 +319,35 @@ const setupCanvas = () => {
 
   renderGrid(graphLayer)
 }
+const MAX_HISTORY_SIZE = 50
+
+function updateCanvasState() {
+  historyIndex++
+
+  if (historyIndex >= MAX_HISTORY_SIZE) {
+    return
+  }
+  canvasStateHistory = canvasStateHistory.slice(0, historyIndex) // Trim future states
+  canvasStateHistory.push(lastLine)
+}
+
+const undo = () => {
+  if (historyIndex < 0) {
+    console.log('nothing to undo')
+    return
+  }
+
+  canvasStateHistory[historyIndex].remove()
+  historyIndex--
+}
+
+const redo = () => {
+  if (historyIndex + 1 >= canvasStateHistory.length) {
+    console.log('nothing to redo')
+    return
+  }
+  drawingLayer.add(canvasStateHistory[++historyIndex])
+}
 
 setupCanvas()
 
@@ -326,17 +361,33 @@ window.onfocus = () => {
   setupCanvas()
 }
 
+window.onblur = () => {
+  saveEnabled && localStorage.setItem('canvas-grid-state', stage.toJSON())
+}
+
 // declare let stage;
 document.addEventListener('DOMContentLoaded', () => {
-  const deleteIconButton = document?.getElementById('delete-icon-button')
+  const deleteIconButton = document?.getElementById('discard-canvas-button')
   deleteIconButton?.addEventListener('click', () => {
     // todo: add confirmation modal
     drawingLayer.removeChildren()
+    localStorage.removeItem('canvas-grid-state')
     stage.x(0)
     stage.y(0)
     stage.scaleY(1)
     stage.scaleX(1)
 
     // todo: close menu
+  })
+})
+
+document.addEventListener('DOMContentLoaded', () => {
+  const undoIconButton = document?.getElementById('undo-icon-button')
+  undoIconButton?.addEventListener('click', () => {
+    undo()
+  })
+  const redoIconBUtton = document?.getElementById('redo-icon-button')
+  redoIconBUtton?.addEventListener('click', () => {
+    redo()
   })
 })

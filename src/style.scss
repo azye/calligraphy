@@ -19,6 +19,8 @@
   z-index: 10;
   display: none;
   margin: auto;
+  user-select: none;
+  -moz-user-select: none;
 }
 
 #header-menu {
@@ -29,4 +31,23 @@
 .icon-menu-icon {
   padding-left: 8px;
   cursor: pointer;
+}
+
+.modal-card-head {
+  box-shadow: none;
+}
+
+.modal-card-foot {
+  background-color: var(--bulma-modal-card-body-background-color);
+}
+
+/* In your styles.scss or a separate CSS file */
+#delete-modal .modal-card {
+  width: 300px; /* Set your desired width */
+  max-width: 80%; /* Optional: Limit the maximum width */
+}
+
+#delete-modal .modal-card-body {
+  padding-top: 0px;
+  padding-bottom: 0px;
 }

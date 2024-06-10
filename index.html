@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/grid.svg" />
@@ -38,19 +38,66 @@
           </svg>
           <svg
             id="delete-icon-button"
-            class="icon-menu-icon"
+            class="icon-menu-icon js-modal-trigger"
+            data-target="delete-modal"
             xmlns="http://www.w3.org/2000/svg"
             height="25px"
             viewBox="0 0 24 24"
             width="24px"
             fill="#000000"
           >
-            <path d="M0 0h24v24H0z" fill="none" />
-            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+            <path d="M0 0h24v24H0V0z" fill="none" />
+            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM8 9h8v10H8V9zm7.5-5l-1-1h-5l-1 1H5v2h14V4h-3.5z" />
+          </svg>
+          <svg
+            id="undo-icon-button"
+            class="icon-menu-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            height="25px"
+            viewBox="0 0 24 24"
+            width="25px"
+            fill="#000000"
+          >
+            <path d="M0 0h24v24H0V0z" fill="none" />
+            <path
+              d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"
+            />
+          </svg>
+          <svg
+            id="redo-icon-button"
+            class="icon-menu-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            height="25px"
+            viewBox="0 0 24 24"
+            width="25px"
+            fill="#000000"
+          >
+            <path d="M0 0h24v24H0V0z" fill="none" />
+            <path
+              d="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z"
+            />
           </svg>
         </div>
       </div>
       <div id="container"></div>
+      <div class="modal" id="delete-modal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+          <header class="modal-card-head">
+            <p class="modal-card-title">Discard?💔</p>
+            <!-- <button class="delete" aria-label="close"></button> -->
+          </header>
+          <section class="modal-card-body">
+            <div>Are you sure you want to discard your masterpiece?</div>
+          </section>
+          <footer class="modal-card-foot">
+            <div class="buttons">
+              <button id="discard-canvas-button" class="button is-danger">Discard 🪓</button>
+              <button class="button">NO</button>
+            </div>
+          </footer>
+        </div>
+      </div>
     </div>
     <script type="module" src="/src/canvas.ts"></script>
   </body>
