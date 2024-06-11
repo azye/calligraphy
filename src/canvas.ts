@@ -1,6 +1,6 @@
 import Konva from 'konva'
 import { Point, getCenter, getDistance } from './utils'
-import { renderGrid, renderRiceGrid } from './grids'
+import { renderRiceGrid } from './grids'
 
 let stage: Konva.Stage
 let drawingLayer: Konva.Layer
