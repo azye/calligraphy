@@ -1,6 +1,6 @@
 import Konva from 'konva'
 import { Point, getCenter, getDistance } from './utils'
-import { renderRiceGrid } from './grids'
+import { renderGrid, renderRiceGrid } from './grids'
 
 let stage: Konva.Stage
 let drawingLayer: Konva.Layer
@@ -267,7 +267,8 @@ const setupCanvas = () => {
     }
   })
 
-  renderRiceGrid(graphLayer)
+  // renderRiceGrid(graphLayer)
+  renderGrid(graphLayer)
 }
 const MAX_HISTORY_SIZE = 50
 
