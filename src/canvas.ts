@@ -56,8 +56,8 @@ function setupCanvas() {
   if (savedState) {
     state.stage = Konva.Node.create(savedState, 'container');
     state.stage.x(0).y(0).scaleX(1).scaleY(1);
-    state.graphLayer = state.stage.findOne('.graph-layer');
-    state.paperLayer = state.stage.findOne('.paper-layer');
+    state.graphLayer = state.stage.findOne('.graph-layer') || new Konva.Layer({ name: 'graph-layer' });
+    state.paperLayer = state.stage.findOne('.paper-layer') || new Konva.Layer({ name: 'paper-layer' });
     state.drawingLayer = state.stage.findOne('.drawing-layer') || new Konva.Layer({ name: 'drawing-layer' });
     state.stage.removeChildren();
   } else {
@@ -99,7 +99,6 @@ function handleDrawStart(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
 
   if (e.type === 'touchstart') {
     e.evt.preventDefault();
-    const touch1 = (e.evt as TouchEvent).touches[0];
     const touch2 = (e.evt as TouchEvent).touches[1];
     if (touch2 || state.isTouching2) return;
   }
