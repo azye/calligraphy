@@ -1,13 +1,14 @@
 import Konva from 'konva'
 import { Point, getCenter, getDistance } from './utils'
 import { renderGrid } from './grids'
+import { Line, LineConfig } from 'konva/lib/shapes/Line'
 
 let stage: Konva.Stage
 let drawingLayer: Konva.Layer
-let saveEnabled: boolean = false
+let saveEnabled: boolean = true
 const mode = 'brush'
 let canvasStateHistory: Konva.Line[] = []
-let historyIndex = -1
+let historyIndex = 0
 let lastLine: Konva.Line
 
 const setupCanvas = () => {
@@ -26,10 +27,10 @@ const setupCanvas = () => {
 
   if (saveEnabled && state) {
     stage = Konva.Node.create(state, 'container')
-    // stage.x(0)
-    // stage.y(0)
-    // stage.scaleX(1)
-    // stage.scaleY(1)
+    stage.x(0)
+    stage.y(0)
+    stage.scaleX(1)
+    stage.scaleY(1)
     graphLayer = stage.children[0]
     paperLayer = stage.children[1]
     drawingLayer = stage.children.length >= 3 ? stage.children[2] : new Konva.Layer({ name: 'drawing-layer' })
@@ -58,7 +59,6 @@ const setupCanvas = () => {
   stage.add(drawingLayer)
 
   stage.on('mousedown', () => {
-    // updateCanvasState()
     isdragging = true
     const pos = drawingLayer.getRelativePointerPosition()
     if (pos) {
@@ -74,7 +74,9 @@ const setupCanvas = () => {
       })
       isPaint = true
       drawingLayer.add(lastLine)
+      // updateCanvasState()
     }
+
   })
 
   stage.on('touchstart', (e) => {
@@ -110,6 +112,7 @@ const setupCanvas = () => {
         points: [pos.x, pos.y, pos.x, pos.y],
       })
       drawingLayer.add(lastLine)
+      // updateCanvasState()
     }
   })
 
@@ -270,34 +273,59 @@ const setupCanvas = () => {
   // renderRiceGrid(graphLayer)
   renderGrid(graphLayer)
 }
-const MAX_HISTORY_SIZE = 50
+// const MAX_HISTORY_SIZE = 50
+let redoCache: Line<LineConfig>[] = []
 
 function updateCanvasState() {
-  historyIndex++
 
-  if (historyIndex >= MAX_HISTORY_SIZE) {
-    return
-  }
+  // if (historyIndex >= MAX_HISTORY_SIZE) {
+  //   return
+  // }
   canvasStateHistory = canvasStateHistory.slice(0, historyIndex) // Trim future states
   canvasStateHistory.push(lastLine)
+  redoCache = []
+  historyIndex++
+
+  console.log(canvasStateHistory, historyIndex)
+
 }
 
+
 const undo = () => {
-  if (historyIndex < 0) {
-    console.log('nothing to undo')
+  if (historyIndex <= 0) {
     return
   }
+  redoCache.push(canvasStateHistory[--historyIndex].destroy())
+  console.log(canvasStateHistory, historyIndex)
 
-  canvasStateHistory[historyIndex].destroy()
-  historyIndex--
+  // if (historyIndex <= 0) {
+  //   historyIndex = 0
+  //   console.log('nothing to undo')
+  //   return
+  // }
+  // historyIndex--
+
+  // console.log(canvasStateHistory)
 }
 
 const redo = () => {
-  if (historyIndex + 1 >= canvasStateHistory.length) {
-    console.log('nothing to redo')
+  // if (historyIndex >= canvasStateHistory.length) {
+  //   console.log('nothing to redo')
+  //   return
+  // }
+  // drawingLayer.add(Konva.Line.create(canvasStateHistory[historyIndex]))
+  // canvasStateHistory[historyIndex].show()
+  // historyIndex++
+
+
+
+  const line = redoCache.pop()
+  if (!line ) {
     return
   }
-  drawingLayer.add(Konva.Line.create(canvasStateHistory[++historyIndex]))
+  drawingLayer.add(line)
+  canvasStateHistory[historyIndex++] = line
+  console.log("undo", canvasStateHistory, historyIndex -1)
 }
 
 setupCanvas()
