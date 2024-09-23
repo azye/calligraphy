@@ -1,372 +1,323 @@
-import Konva from 'konva'
-import { Point, getCenter, getDistance } from './utils'
-import { renderGrid } from './grids'
-import { Line, LineConfig } from 'konva/lib/shapes/Line'
+import Konva from 'konva';
+import { Point, getCenter, getDistance } from './utils';
+import { renderGrid, renderRiceGrid } from './grids';
+import { Line, LineConfig } from 'konva/lib/shapes/Line';
 
-let stage: Konva.Stage
-let drawingLayer: Konva.Layer
-let saveEnabled: boolean = true
-const mode = 'brush'
-let canvasStateHistory: Konva.Line[] = []
-let historyIndex = 0
-let lastLine: Konva.Line
+enum GridMode {
+  Grid = 1,
+  Rice,
+}
 
-const setupCanvas = () => {
-  Konva.hitOnDragEnabled = true
-  const state = localStorage.getItem('canvas-grid-state')
-  saveEnabled = saveEnabled || localStorage.getItem('save-enabled') === 'true'
-  let lastCenter: Point | null
-  let lastDist = 0
-  let dragStopped = false
-  let isPaint = false
-  // touching2 is used to prevent lines from being drawn on finger lift
-  let touching2 = false
-  let isdragging = false
-  let graphLayer
-  let paperLayer
+interface AppState {
+  stage: Konva.Stage;
+  drawingLayer: Konva.Layer;
+  graphLayer: Konva.Layer;
+  paperLayer: Konva.Layer;
+  lastLine: Konva.Line | null;
+  isPaint: boolean;
+  isDragging: boolean;
+  isTouching2: boolean;
+  lastCenter: Point | null;
+  lastDist: number;
+  dragStopped: boolean;
+  canvasStateHistory: Konva.Line[];
+  historyIndex: number;
+  redoCache: Line<LineConfig>[];
+}
 
-  if (saveEnabled && state) {
-    stage = Konva.Node.create(state, 'container')
-    stage.x(0)
-    stage.y(0)
-    stage.scaleX(1)
-    stage.scaleY(1)
-    graphLayer = stage.children[0]
-    paperLayer = stage.children[1]
-    drawingLayer = stage.children.length >= 3 ? stage.children[2] : new Konva.Layer({ name: 'drawing-layer' })
-    stage.removeChildren()
+const state: AppState = {
+  stage: null!,
+  drawingLayer: null!,
+  graphLayer: null!,
+  paperLayer: null!,
+  lastLine: null,
+  isPaint: false,
+  isDragging: false,
+  isTouching2: false,
+  lastCenter: null,
+  lastDist: 0,
+  dragStopped: false,
+  canvasStateHistory: [],
+  historyIndex: 0,
+  redoCache: [],
+};
+
+const config = {
+  saveEnabled: localStorage.getItem('save-enabled') !== 'false',
+  gridMode: localStorage.getItem('grid-mode') !== 'rice' ? GridMode.Grid : GridMode.Rice,
+  mode: 'brush',
+  scaleBy: 1.05,
+};
+
+function setupCanvas() {
+  Konva.hitOnDragEnabled = true;
+  const savedState = config.saveEnabled ? localStorage.getItem('canvas-grid-state') : null;
+
+  if (savedState) {
+    state.stage = Konva.Node.create(savedState, 'container');
+    state.stage.x(0).y(0).scaleX(1).scaleY(1);
+    state.graphLayer = state.stage.findOne('.graph-layer');
+    state.paperLayer = state.stage.findOne('.paper-layer');
+    state.drawingLayer = state.stage.findOne('.drawing-layer') || new Konva.Layer({ name: 'drawing-layer' });
+    state.stage.removeChildren();
   } else {
-    stage = new Konva.Stage({
+    state.stage = new Konva.Stage({
       container: 'container',
       width: window.innerWidth,
       height: window.innerHeight,
-    })
-    drawingLayer = new Konva.Layer({ name: 'drawing-layer' })
-    graphLayer = new Konva.Layer({ name: 'graph-layer' })
-    paperLayer = new Konva.Layer({ name: 'paper-layer' })
+    });
+    state.drawingLayer = new Konva.Layer({ name: 'drawing-layer' });
+    state.graphLayer = new Konva.Layer({ name: 'graph-layer' });
+    state.paperLayer = new Konva.Layer({ name: 'paper-layer' });
     const rect = new Konva.Rect({
       fill: '#f9f5ef',
       x: 0,
       y: 0,
       width: window.innerWidth,
       height: window.innerHeight,
-    })
-
-    paperLayer.add(rect)
+    });
+    state.paperLayer.add(rect);
   }
-  stage.add(paperLayer)
-  stage.add(graphLayer)
-  stage.add(drawingLayer)
 
-  stage.on('mousedown', () => {
-    isdragging = true
-    const pos = drawingLayer.getRelativePointerPosition()
-    if (pos) {
-      lastLine = new Konva.Line({
-        stroke: '#3a4045',
-        strokeWidth: 4,
-        globalCompositeOperation: mode === 'brush' ? 'source-over' : 'destination-out',
-        // round cap for smoother lines
-        lineCap: 'round',
-        lineJoin: 'round',
-        // add point twice, so we have some drawings even on a simple click
-        points: [pos.x, pos.y, pos.x, pos.y],
-      })
-      isPaint = true
-      drawingLayer.add(lastLine)
-      // updateCanvasState()
-    }
+  state.stage.add(state.paperLayer, state.graphLayer, state.drawingLayer);
 
-  })
-
-  stage.on('touchstart', (e) => {
-    e.evt.preventDefault()
-    // updateCanvasState()
-    const touch1 = e.evt.touches[0]
-    const touch2 = e.evt.touches[1]
-    const pos = drawingLayer.getRelativePointerPosition()
-
-    if (
-      pos &&
-      touch1 &&
-      !touch2 &&
-      !isPaint &&
-      pos.x >= 0 &&
-      pos.y >= 0 &&
-      pos.x < drawingLayer.hitCanvas.width &&
-      pos.y < drawingLayer.hitCanvas.height
-    ) {
-      if (touching2) {
-        return
-      }
-
-      isPaint = true
-      lastLine = new Konva.Line({
-        stroke: '#302e2e',
-        strokeWidth: 4,
-        globalCompositeOperation: mode === 'brush' ? 'source-over' : 'destination-out',
-        // round cap for smoother lines
-        lineCap: 'round',
-        lineJoin: 'round',
-        // add point twice, so we have some drawings even on a simple click
-        points: [pos.x, pos.y, pos.x, pos.y],
-      })
-      drawingLayer.add(lastLine)
-      // updateCanvasState()
-    }
-  })
-
-  stage.on('mousemove', () => {
-    if (!isdragging) {
-      return
-    }
-    const pos = drawingLayer.getRelativePointerPosition()
-    if (pos && pos.x >= 0 && pos.y >= 0) {
-      const newPoints = lastLine.points().concat([pos.x, pos.y])
-      lastLine.points(newPoints)
-    }
-  })
-
-  stage.on('touchmove', function (e) {
-    e.evt.preventDefault()
-    const touch1 = e.evt.touches[0]
-    const touch2 = e.evt.touches[1]
-
-    // we need to restore dragging, if it was cancelled by multi-touch
-    if (touch1 && !touch2 && !stage.isDragging() && dragStopped) {
-      // touching1 = true
-      stage.startDrag()
-      dragStopped = false
-    }
-
-    if (isPaint && !touch2) {
-      if (touching2) {
-        return
-      }
-      const pos = drawingLayer.getRelativePointerPosition()
-
-      if (
-        pos &&
-        pos.x >= 0 &&
-        pos.y >= 0 &&
-        pos.x < drawingLayer.hitCanvas.width &&
-        pos.y < drawingLayer.hitCanvas.height
-      ) {
-        const newPoints = lastLine.points().concat([pos.x, pos.y])
-        lastLine.points(newPoints)
-      }
-    }
-
-    if (touch2 && isPaint) {
-      touching2 = true
-      // this makes it so putting your second finger down wont produce dots
-      lastLine.destroy()
-    }
-
-    if (touch1 && touch2) {
-      touching2 = true
-      // touching1 = true
-      isPaint = false
-      // if the stage was under Konva's drag&drop
-      // we need to stop it, and implement our own pan logic with two pointers
-      if (stage.isDragging()) {
-        dragStopped = true
-        stage.stopDrag()
-      }
-
-      const p1 = {
-        x: touch1.clientX,
-        y: touch1.clientY,
-      }
-      const p2 = {
-        x: touch2.clientX,
-        y: touch2.clientY,
-      }
-
-      if (!lastCenter) {
-        lastCenter = getCenter(p1, p2)
-        return
-      }
-      const newCenter = getCenter(p1, p2)
-      const dist = getDistance(p1, p2)
-
-      if (!lastDist) {
-        lastDist = dist
-      }
-
-      // local coordinates of center point
-      const pointTo = {
-        x: (newCenter.x - stage.x()) / stage.scaleX(),
-        y: (newCenter.y - stage.y()) / stage.scaleY(),
-      }
-
-      const scale = stage.scaleX() * (dist / lastDist)
-
-      stage.scaleX(scale)
-      stage.scaleY(scale)
-
-      // calculate new position of the stage
-      const dx = newCenter.x - lastCenter.x
-      const dy = newCenter.y - lastCenter.y
-
-      const newPos = {
-        x: newCenter.x - pointTo.x * scale + dx,
-        y: newCenter.y - pointTo.y * scale + dy,
-      }
-
-      stage.position(newPos)
-
-      lastDist = dist
-      lastCenter = newCenter
-    }
-  })
-
-  stage.on('mouseup touchend', () => {
-    if (isPaint) updateCanvasState()
-    lastDist = 0
-    lastCenter = null
-    isPaint = false
-    isdragging = false
-    touching2 = false
-    // saveEnabled && localStorage.setItem('canvas-grid-state', stage.toJSON())
-  })
-
-  const scaleBy = 1.05
-  stage.on('wheel', (e) => {
-    // stop default scrolling
-    e.evt.preventDefault()
-
-    if (e.evt.ctrlKey) {
-      const oldScale = stage.scaleX()
-      const pointer = stage.getPointerPosition()
-
-      if (!pointer) {
-        return
-      }
-
-      const mousePointTo = {
-        x: (pointer.x - stage.x()) / oldScale,
-        y: (pointer.y - stage.y()) / oldScale,
-      }
-
-      const direction = e.evt.deltaY > 0 ? -1 : 1
-
-      const newScale = direction > 0 ? oldScale * scaleBy : oldScale / scaleBy
-
-      stage.scale({ x: newScale, y: newScale })
-
-      const newPos = {
-        x: pointer.x - mousePointTo.x * newScale,
-        y: pointer.y - mousePointTo.y * newScale,
-      }
-      stage.position(newPos)
-    } else {
-      const newPos = {
-        x: stage.x() + e.evt.deltaX,
-        y: stage.y() + e.evt.deltaY,
-      }
-
-      stage.position(newPos)
-    }
-  })
-
-  // renderRiceGrid(graphLayer)
-  renderGrid(graphLayer)
+  setupEventListeners();
+  renderGridLayer();
 }
-// const MAX_HISTORY_SIZE = 50
-let redoCache: Line<LineConfig>[] = []
+
+function setupEventListeners() {
+  state.stage.on('mousedown touchstart', handleDrawStart);
+  state.stage.on('mousemove touchmove', handleDrawMove);
+  state.stage.on('mouseup touchend', handleDrawEnd);
+  state.stage.on('wheel', handleWheel);
+
+}
+
+function handleDrawStart(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
+  const pos = state.drawingLayer.getRelativePointerPosition();
+  if (!pos) return;
+
+  if (e.type === 'touchstart') {
+    e.evt.preventDefault();
+    const touch1 = (e.evt as TouchEvent).touches[0];
+    const touch2 = (e.evt as TouchEvent).touches[1];
+    if (touch2 || state.isTouching2) return;
+  }
+
+  state.isDragging = true;
+  state.isPaint = true;
+  state.lastLine = new Konva.Line({
+    stroke: '#3a4045',
+    strokeWidth: 4,
+    globalCompositeOperation: config.mode === 'brush' ? 'source-over' : 'destination-out',
+    lineCap: 'round',
+    lineJoin: 'round',
+    points: [pos.x, pos.y, pos.x, pos.y],
+  });
+  state.drawingLayer.add(state.lastLine);
+}
+
+function handleDrawMove(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
+  if (e.type === 'touchmove') {
+    e.evt.preventDefault();
+    const touch1 = (e.evt as TouchEvent).touches[0];
+    const touch2 = (e.evt as TouchEvent).touches[1];
+
+    if (touch1 && !touch2 && !state.stage.isDragging() && state.dragStopped) {
+      state.stage.startDrag();
+      state.dragStopped = false;
+    }
+
+    if (touch2) {
+      handleMultiTouch(touch1, touch2);
+      return;
+    }
+  }
+
+  if (!state.isDragging || !state.isPaint || state.isTouching2) return;
+
+  const pos = state.drawingLayer.getRelativePointerPosition();
+  if (!pos || pos.x < 0 || pos.y < 0 || pos.x >= state.drawingLayer.width() || pos.y >= state.drawingLayer.height()) return;
+
+  const newPoints = state.lastLine!.points().concat([pos.x, pos.y]);
+  state.lastLine!.points(newPoints);
+}
+
+function handleMultiTouch(touch1: Touch, touch2: Touch) {
+  state.isTouching2 = true;
+  state.isPaint = false;
+  if (state.lastLine) state.lastLine.destroy();
+
+  if (state.stage.isDragging()) {
+    state.dragStopped = true;
+    state.stage.stopDrag();
+  }
+
+  const p1 = { x: touch1.clientX, y: touch1.clientY };
+  const p2 = { x: touch2.clientX, y: touch2.clientY };
+  const newCenter = getCenter(p1, p2);
+  const dist = getDistance(p1, p2);
+
+  if (!state.lastCenter) {
+    state.lastCenter = newCenter;
+    state.lastDist = dist;
+    return;
+  }
+
+  const pointTo = {
+    x: (newCenter.x - state.stage.x()) / state.stage.scaleX(),
+    y: (newCenter.y - state.stage.y()) / state.stage.scaleY(),
+  };
+
+  const scale = state.stage.scaleX() * (dist / state.lastDist);
+  state.stage.scale({ x: scale, y: scale });
+
+  const dx = newCenter.x - state.lastCenter.x;
+  const dy = newCenter.y - state.lastCenter.y;
+  const newPos = {
+    x: newCenter.x - pointTo.x * scale + dx,
+    y: newCenter.y - pointTo.y * scale + dy,
+  };
+  state.stage.position(newPos);
+
+  state.lastDist = dist;
+  state.lastCenter = newCenter;
+}
+
+function handleDrawEnd() {
+  if (state.isPaint) updateCanvasState();
+  state.lastDist = 0;
+  state.lastCenter = null;
+  state.isPaint = false;
+  state.isDragging = false;
+  state.isTouching2 = false;
+  if (config.saveEnabled) localStorage.setItem('canvas-grid-state', state.stage.toJSON());
+}
+
+function handleWheel(e: Konva.KonvaEventObject<WheelEvent>) {
+  e.evt.preventDefault();
+
+  const oldScale = state.stage.scaleX();
+  const pointer = state.stage.getPointerPosition();
+  if (!pointer) return;
+
+  const mousePointTo = {
+    x: (pointer.x - state.stage.x()) / oldScale,
+    y: (pointer.y - state.stage.y()) / oldScale,
+  };
+
+  let newScale: number;
+  let newPos: { x: number; y: number };
+
+  if (e.evt.ctrlKey) {
+    const direction = e.evt.deltaY > 0 ? -1 : 1;
+    newScale = direction > 0 ? oldScale * config.scaleBy : oldScale / config.scaleBy;
+    state.stage.scale({ x: newScale, y: newScale });
+
+    newPos = {
+      x: pointer.x - mousePointTo.x * newScale,
+      y: pointer.y - mousePointTo.y * newScale,
+    };
+  } else {
+    newPos = {
+      x: state.stage.x() + e.evt.deltaX,
+      y: state.stage.y() + e.evt.deltaY,
+    };
+  }
+
+  state.stage.position(newPos);
+}
 
 function updateCanvasState() {
-
-  // if (historyIndex >= MAX_HISTORY_SIZE) {
-  //   return
-  // }
-  canvasStateHistory = canvasStateHistory.slice(0, historyIndex) // Trim future states
-  canvasStateHistory.push(lastLine)
-  redoCache = []
-  historyIndex++
-
-  console.log(canvasStateHistory, historyIndex)
-
+  state.canvasStateHistory = state.canvasStateHistory.slice(0, state.historyIndex);
+  state.canvasStateHistory.push(state.lastLine!);
+  state.redoCache = [];
+  state.historyIndex++;
 }
 
+function undo() {
+  if (state.historyIndex <= 0) return;
+  const lineToUndo = state.canvasStateHistory[--state.historyIndex];
+  state.redoCache.push(lineToUndo);
+  lineToUndo.hide();
+}
 
-const undo = () => {
-  if (historyIndex <= 0) {
-    return
+function redo() {
+  const lineToRedo = state.redoCache.pop();
+  if (!lineToRedo) return;
+  lineToRedo.show();
+  state.canvasStateHistory[state.historyIndex++] = lineToRedo;
+}
+
+function renderGridLayer() {
+  config.gridMode === GridMode.Rice ? renderRiceGrid(state.graphLayer) : renderGrid(state.graphLayer);
+}
+
+function clearCanvas() {
+  state.drawingLayer.destroyChildren();
+  state.graphLayer.destroyChildren();
+  renderGridLayer();
+  localStorage.removeItem('canvas-grid-state');
+  state.stage.position({ x: 0, y: 0 });
+  state.stage.scale({ x: 1, y: 1 });
+}
+
+setupCanvas();
+
+window.addEventListener('beforeunload', () => {
+  if (config.saveEnabled) {
+    localStorage.setItem('canvas-grid-state', state.stage.toJSON());
+  } else {
+    localStorage.removeItem('canvas-grid-state');
   }
-  redoCache.push(canvasStateHistory[--historyIndex].destroy())
-  console.log(canvasStateHistory, historyIndex)
+});
 
-  // if (historyIndex <= 0) {
-  //   historyIndex = 0
-  //   console.log('nothing to undo')
-  //   return
-  // }
-  // historyIndex--
+window.addEventListener('focus', () => {
+  // TODO: Optimize this so refocusing isn't as slow
+  // setupCanvas();
+});
 
-  // console.log(canvasStateHistory)
-}
-
-const redo = () => {
-  // if (historyIndex >= canvasStateHistory.length) {
-  //   console.log('nothing to redo')
-  //   return
-  // }
-  // drawingLayer.add(Konva.Line.create(canvasStateHistory[historyIndex]))
-  // canvasStateHistory[historyIndex].show()
-  // historyIndex++
-
-
-
-  const line = redoCache.pop()
-  if (!line ) {
-    return
+window.addEventListener('blur', () => {
+  if (config.saveEnabled) {
+    localStorage.setItem('canvas-grid-state', state.stage.toJSON());
   }
-  drawingLayer.add(line)
-  canvasStateHistory[historyIndex++] = line
-  console.log("undo", canvasStateHistory, historyIndex -1)
+});
+
+function handleKeyboardShortcuts(event: KeyboardEvent) {
+  // Check if the Ctrl key is pressed
+  if (event.ctrlKey || event.metaKey) { // metaKey for Mac support
+    switch (event.key.toLowerCase()) {
+      case 'z':
+        // Ctrl+Z for undo
+        if (!event.shiftKey) {
+          event.preventDefault(); // Prevent default browser undo
+          undo();
+        }
+        // Ctrl+Shift+Z for redo
+        else {
+          event.preventDefault(); // Prevent default browser redo
+          redo();
+        }
+        break;
+      case 'y':
+        // Ctrl+Y for redo (alternative shortcut)
+        event.preventDefault();
+        redo();
+        break;
+    }
+  }
 }
 
-setupCanvas()
+window.addEventListener('keydown', handleKeyboardShortcuts);
 
-window.onbeforeunload = () => {
-  saveEnabled && localStorage.setItem('canvas-grid-state', stage.toJSON())
-  !saveEnabled && localStorage.removeItem('canvas-grid-state')
-}
-
-window.onfocus = () => {
-  // todo: optimize this so refocusing isnt as slow
-  // setupCanvas()
-}
-
-window.onblur = () => {
-  saveEnabled && localStorage.setItem('canvas-grid-state', stage.toJSON())
-}
-
-// declare let stage;
-document.addEventListener('DOMContentLoaded', () => {
-  const deleteIconButton = document?.getElementById('discard-canvas-button')
-  deleteIconButton?.addEventListener('click', () => {
-    // todo: add confirmation modal
-    drawingLayer.removeChildren()
-    localStorage.removeItem('canvas-grid-state')
-    stage.x(0)
-    stage.y(0)
-    stage.scaleY(1)
-    stage.scaleX(1)
-
-    // todo: close menu
-  })
-})
 
 document.addEventListener('DOMContentLoaded', () => {
-  const undoIconButton = document?.getElementById('undo-icon-button')
-  undoIconButton?.addEventListener('click', () => {
-    undo()
-  })
-  const redoIconBUtton = document?.getElementById('redo-icon-button')
-  redoIconBUtton?.addEventListener('click', () => {
-    redo()
-  })
-})
+  const deleteIconButton = document.getElementById('discard-canvas-button');
+  deleteIconButton?.addEventListener('click', clearCanvas);
+
+  const undoIconButton = document.getElementById('undo-icon-button');
+  undoIconButton?.addEventListener('click', undo);
+
+  const redoIconButton = document.getElementById('redo-icon-button');
+  redoIconButton?.addEventListener('click', redo);
+});
