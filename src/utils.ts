@@ -13,3 +13,15 @@ export const getCenter = (p1: Point, p2: Point) => {
     y: (p1.y + p2.y) / 2,
   }
 }
+
+export const reversePointArray = (arr: number[]): number[] => {
+  const a = arr[0]
+  const b = arr[1]
+
+  arr[0] = arr[2]
+  arr[1] = arr[3]
+  arr[2] = a
+  arr[3] = b
+
+  return arr
+}

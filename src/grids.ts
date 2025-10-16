@@ -1,5 +1,5 @@
 import Konva from 'konva'
-// import { reversePointArray } from './utils'
+import { reversePointArray } from './utils'
 
 const BUFFER = 20 // min margin buffer size
 const CELL_SIZE = 75
@@ -9,17 +9,6 @@ const DEFAULT_GRID_LINE = {
   strokeWidth: 1,
 }
 
-const reversePointArray = (arr: number[]): number[] => {
-  const a = arr[0]
-  const b = arr[1]
-
-  arr[0] = arr[2]
-  arr[1] = arr[3]
-  arr[2] = a
-  arr[3] = b
-
-  return arr
-}
 const renderGridBorder = (layer: Konva.Layer) => {
   const gridCols = Math.floor((layer.hitCanvas.width - BUFFER * 2) / 75)
   const gridRows = Math.floor((layer.hitCanvas.height - BUFFER * 2) / 75)

@@ -23,3 +23,7 @@ This document summarizes the project-level changes.
 - **Edge Case Coverage**: Added comprehensive edge case testing for undo/redo functionality
 - **Performance Testing**: Added tests for large datasets and complex operation patterns
 - **Cross-Platform Support**: Added tests for both Windows (Ctrl) and Mac (Cmd) keyboard shortcuts
+
+## Test Fixes
+
+- **Fixed Failing Test**: Resolved a `TypeError` in the canvas setup test by providing a more complete mock for the `Konva.Layer` object, ensuring the `hitCanvas` property was available.

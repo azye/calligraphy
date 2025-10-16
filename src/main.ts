@@ -1,7 +1,14 @@
 import './style.scss'
+import { setupCanvas } from './canvas'
+import { setupUIEventListeners } from './events'
+import { config } from './config'
+import { state } from './state'
 
 // declare var stage;
 document.addEventListener('DOMContentLoaded', () => {
+  setupCanvas()
+  setupUIEventListeners()
+
   // Get all "navbar-burger" elements
   const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0)
 
@@ -61,4 +68,23 @@ document.addEventListener('DOMContentLoaded', () => {
       closeAllModals()
     }
   })
+})
+
+window.addEventListener('beforeunload', () => {
+  if (config.saveEnabled) {
+    localStorage.setItem('canvas-grid-state', state.stage.toJSON())
+  } else {
+    localStorage.removeItem('canvas-grid-state')
+  }
+})
+
+window.addEventListener('focus', () => {
+  // TODO: Optimize this so refocusing isn't as slow
+  // setupCanvas();
+})
+
+window.addEventListener('blur', () => {
+  if (config.saveEnabled) {
+    localStorage.setItem('canvas-grid-state', state.stage.toJSON())
+  }
 })

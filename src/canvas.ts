@@ -1,53 +1,10 @@
 import Konva from 'konva'
-import { Point, getCenter, getDistance } from './utils'
+import { getCenter, getDistance } from './utils'
 import { renderGrid, renderRiceGrid } from './grids'
-import { Line, LineConfig } from 'konva/lib/shapes/Line'
 
-enum GridMode {
-  Grid = 1,
-  Rice,
-}
+import { config, GridMode } from './config'
 
-interface AppState {
-  stage: Konva.Stage
-  drawingLayer: Konva.Layer
-  graphLayer: Konva.Layer
-  paperLayer: Konva.Layer
-  lastLine: Konva.Line | null
-  isPaint: boolean
-  isDragging: boolean
-  isTouching2: boolean
-  lastCenter: Point | null
-  lastDist: number
-  dragStopped: boolean
-  canvasStateHistory: Konva.Line[]
-  historyIndex: number
-  redoCache: Line<LineConfig>[]
-}
-
-export const state: AppState = {
-  stage: null!,
-  drawingLayer: null!,
-  graphLayer: null!,
-  paperLayer: null!,
-  lastLine: null,
-  isPaint: false,
-  isDragging: false,
-  isTouching2: false,
-  lastCenter: null,
-  lastDist: 0,
-  dragStopped: false,
-  canvasStateHistory: [],
-  historyIndex: 0,
-  redoCache: [],
-}
-
-export const config = {
-  saveEnabled: localStorage.getItem('save-enabled') !== 'false',
-  gridMode: localStorage.getItem('grid-mode') !== 'rice' ? GridMode.Grid : GridMode.Rice,
-  mode: 'brush',
-  scaleBy: 1.05,
-}
+import { state } from './state'
 
 export const setupCanvas = () => {
   Konva.hitOnDragEnabled = true
@@ -82,14 +39,8 @@ export const setupCanvas = () => {
   state.stage.add(state.paperLayer, state.graphLayer, state.drawingLayer)
 
   setupEventListeners()
+  window.addEventListener('keydown', handleKeyboardShortcuts)
   renderGridLayer()
-}
-
-export const setupEventListeners = () => {
-  state.stage.on('mousedown touchstart', handleDrawStart)
-  state.stage.on('mousemove touchmove', handleDrawMove)
-  state.stage.on('mouseup touchend', handleDrawEnd)
-  state.stage.on('wheel', handleWheel)
 }
 
 export const handleDrawStart = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
@@ -265,62 +216,4 @@ export const clearCanvas = () => {
   state.stage.scale({ x: 1, y: 1 })
 }
 
-setupCanvas()
-
-window.addEventListener('beforeunload', () => {
-  if (config.saveEnabled) {
-    localStorage.setItem('canvas-grid-state', state.stage.toJSON())
-  } else {
-    localStorage.removeItem('canvas-grid-state')
-  }
-})
-
-window.addEventListener('focus', () => {
-  // TODO: Optimize this so refocusing isn't as slow
-  // setupCanvas();
-})
-
-window.addEventListener('blur', () => {
-  if (config.saveEnabled) {
-    localStorage.setItem('canvas-grid-state', state.stage.toJSON())
-  }
-})
-
-export const handleKeyboardShortcuts = (event: KeyboardEvent) => {
-  // Check if the Ctrl key is pressed
-  if (event.ctrlKey || event.metaKey) {
-    // metaKey for Mac support
-    switch (event.key.toLowerCase()) {
-      case 'z':
-        // Ctrl+Z for undo
-        if (!event.shiftKey) {
-          event.preventDefault() // Prevent default browser undo
-          undo()
-        }
-        // Ctrl+Shift+Z for redo
-        else {
-          event.preventDefault() // Prevent default browser redo
-          redo()
-        }
-        break
-      case 'y':
-        // Ctrl+Y for redo (alternative shortcut)
-        event.preventDefault()
-        redo()
-        break
-    }
-  }
-}
-
-window.addEventListener('keydown', handleKeyboardShortcuts)
-
-document.addEventListener('DOMContentLoaded', () => {
-  const deleteIconButton = document.getElementById('discard-canvas-button')
-  deleteIconButton?.addEventListener('click', clearCanvas)
-
-  const undoIconButton = document.getElementById('undo-icon-button')
-  undoIconButton?.addEventListener('click', undo)
-
-  const redoIconButton = document.getElementById('redo-icon-button')
-  redoIconButton?.addEventListener('click', redo)
-})
+import { setupEventListeners, handleKeyboardShortcuts } from './events'
