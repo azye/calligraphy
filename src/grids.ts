@@ -244,10 +244,10 @@ const renderCrossGrid = (layer: Konva.Layer) => {
         })
         horizLines.add(r2)
       }
-    horizLinesCache.add(a6)
-    horizLinesCache.add(a6)
-    horizLinesCache.add(a7)
-    horizLinesCache.add(a8)
+      horizLinesCache.add(a6)
+      horizLinesCache.add(a6)
+      horizLinesCache.add(a7)
+      horizLinesCache.add(a8)
       // const r = new Konva.Line({
       //   points: rPts,
       // ...DEFAULT_GRID_LINE

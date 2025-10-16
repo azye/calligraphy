@@ -19,15 +19,15 @@ document.addEventListener('DOMContentLoaded', () => {
     })
   })
   // Functions to open and close a modal
-  function openModal($el: HTMLElement | null) {
+  const openModal = ($el: HTMLElement | null) => {
     $el?.classList.add('is-active')
   }
 
-  function closeModal($el: Element | null) {
+  const closeModal = ($el: Element | null) => {
     $el?.classList.remove('is-active')
   }
 
-  function closeAllModals() {
+  const closeAllModals = () => {
     ;(document.querySelectorAll('.modal') || []).forEach(($modal) => {
       closeModal($modal)
     })

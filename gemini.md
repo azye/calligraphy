@@ -6,8 +6,10 @@ This document summarizes the project-level changes.
 
 - Updated all project dependencies to their latest versions in `package.json`.
 - Installed `vitest`, `@vitest/ui`, and `jsdom` as dev dependencies.
+- Installed `eslint-config-prettier` and `eslint-plugin-prettier` for ESLint and Prettier integration.
 
 ## Build & Test Configuration
 
 - Configured `vitest` in `vite.config.ts` to use the `jsdom` environment for testing.
 - Added `test` and `test:ui` scripts to `package.json` for running tests.
+- Updated `eslint.config.js` to include `tseslint.configs.stylistic` and integrate Prettier for modern TypeScript linting standards.
