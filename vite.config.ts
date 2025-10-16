@@ -1,8 +1,8 @@
-import { defineConfig } from 'vite'
-import { VitePWA } from 'vite-plugin-pwa'
+import { defineConfig } from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
+import { configDefaults, defineConfig as defineVitestConfig } from 'vitest/config';
 
-// https://vitejs.dev/config/
-export default defineConfig({
+export default defineVitestConfig({
   base: '/calligraphy/',
   plugins: [
     VitePWA({
@@ -31,4 +31,8 @@ export default defineConfig({
       },
     }),
   ],
-})
+  test: {
+    environment: 'jsdom',
+    exclude: [...configDefaults.exclude, '**/tests-e2e/**'],
+  },
+});

@@ -25,7 +25,7 @@ interface AppState {
   redoCache: Line<LineConfig>[];
 }
 
-const state: AppState = {
+export const state: AppState = {
   stage: null!,
   drawingLayer: null!,
   graphLayer: null!,
@@ -42,14 +42,14 @@ const state: AppState = {
   redoCache: [],
 };
 
-const config = {
+export const config = {
   saveEnabled: localStorage.getItem('save-enabled') !== 'false',
   gridMode: localStorage.getItem('grid-mode') !== 'rice' ? GridMode.Grid : GridMode.Rice,
   mode: 'brush',
   scaleBy: 1.05,
 };
 
-function setupCanvas() {
+export function setupCanvas() {
   Konva.hitOnDragEnabled = true;
   const savedState = config.saveEnabled ? localStorage.getItem('canvas-grid-state') : null;
 
@@ -85,7 +85,7 @@ function setupCanvas() {
   renderGridLayer();
 }
 
-function setupEventListeners() {
+export function setupEventListeners() {
   state.stage.on('mousedown touchstart', handleDrawStart);
   state.stage.on('mousemove touchmove', handleDrawMove);
   state.stage.on('mouseup touchend', handleDrawEnd);
@@ -93,7 +93,7 @@ function setupEventListeners() {
 
 }
 
-function handleDrawStart(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
+export function handleDrawStart(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
   const pos = state.drawingLayer.getRelativePointerPosition();
   if (!pos) return;
 
@@ -116,7 +116,7 @@ function handleDrawStart(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
   state.drawingLayer.add(state.lastLine);
 }
 
-function handleDrawMove(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
+export function handleDrawMove(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
   if (e.type === 'touchmove') {
     e.evt.preventDefault();
     const touch1 = (e.evt as TouchEvent).touches[0];
@@ -142,7 +142,7 @@ function handleDrawMove(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
   state.lastLine!.points(newPoints);
 }
 
-function handleMultiTouch(touch1: Touch, touch2: Touch) {
+export function handleMultiTouch(touch1: Touch, touch2: Touch) {
   state.isTouching2 = true;
   state.isPaint = false;
   if (state.lastLine) state.lastLine.destroy();
@@ -183,7 +183,7 @@ function handleMultiTouch(touch1: Touch, touch2: Touch) {
   state.lastCenter = newCenter;
 }
 
-function handleDrawEnd() {
+export function handleDrawEnd() {
   if (state.isPaint) updateCanvasState();
   state.lastDist = 0;
   state.lastCenter = null;
@@ -193,7 +193,7 @@ function handleDrawEnd() {
   if (config.saveEnabled) localStorage.setItem('canvas-grid-state', state.stage.toJSON());
 }
 
-function handleWheel(e: Konva.KonvaEventObject<WheelEvent>) {
+export function handleWheel(e: Konva.KonvaEventObject<WheelEvent>) {
   e.evt.preventDefault();
 
   const oldScale = state.stage.scaleX();
@@ -227,32 +227,32 @@ function handleWheel(e: Konva.KonvaEventObject<WheelEvent>) {
   state.stage.position(newPos);
 }
 
-function updateCanvasState() {
+export function updateCanvasState() {
   state.canvasStateHistory = state.canvasStateHistory.slice(0, state.historyIndex);
   state.canvasStateHistory.push(state.lastLine!);
   state.redoCache = [];
   state.historyIndex++;
 }
 
-function undo() {
+export function undo() {
   if (state.historyIndex <= 0) return;
   const lineToUndo = state.canvasStateHistory[--state.historyIndex];
   state.redoCache.push(lineToUndo);
   lineToUndo.hide();
 }
 
-function redo() {
+export function redo() {
   const lineToRedo = state.redoCache.pop();
   if (!lineToRedo) return;
   lineToRedo.show();
   state.canvasStateHistory[state.historyIndex++] = lineToRedo;
 }
 
-function renderGridLayer() {
+export function renderGridLayer() {
   config.gridMode === GridMode.Rice ? renderRiceGrid(state.graphLayer) : renderGrid(state.graphLayer);
 }
 
-function clearCanvas() {
+export function clearCanvas() {
   state.drawingLayer.destroyChildren();
   state.graphLayer.destroyChildren();
   renderGridLayer();
@@ -282,7 +282,7 @@ window.addEventListener('blur', () => {
   }
 });
 
-function handleKeyboardShortcuts(event: KeyboardEvent) {
+export function handleKeyboardShortcuts(event: KeyboardEvent) {
   // Check if the Ctrl key is pressed
   if (event.ctrlKey || event.metaKey) { // metaKey for Mac support
     switch (event.key.toLowerCase()) {
