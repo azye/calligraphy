@@ -165,7 +165,6 @@ const renderCrossGrid = (layer: Konva.Layer) => {
     horizLinesCache.add(a2)
     horizLinesCache.add(a3)
     horizLinesCache.add(a4)
-    console.log(horizLinesCache)
   }
 
   for (let i = 0; i <= gridCols; i++) {
@@ -274,3 +273,6 @@ export const renderRiceGrid = (layer: Konva.Layer) => {
   renderCrossGrid(layer)
   renderPlusGrid(layer)
 }
+
+// Export individual grid rendering functions for testing
+export { renderGridBorder, renderBasicGrid, renderPlusGrid, renderCrossGrid }
