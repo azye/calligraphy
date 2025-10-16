@@ -49,7 +49,7 @@ export const config = {
   scaleBy: 1.05,
 }
 
-export function setupCanvas() {
+export const setupCanvas = () => {
   Konva.hitOnDragEnabled = true
   const savedState = config.saveEnabled ? localStorage.getItem('canvas-grid-state') : null
 
@@ -85,14 +85,14 @@ export function setupCanvas() {
   renderGridLayer()
 }
 
-export function setupEventListeners() {
+export const setupEventListeners = () => {
   state.stage.on('mousedown touchstart', handleDrawStart)
   state.stage.on('mousemove touchmove', handleDrawMove)
   state.stage.on('mouseup touchend', handleDrawEnd)
   state.stage.on('wheel', handleWheel)
 }
 
-export function handleDrawStart(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
+export const handleDrawStart = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
   const pos = state.drawingLayer.getRelativePointerPosition()
   if (!pos) return
 
@@ -115,7 +115,7 @@ export function handleDrawStart(e: Konva.KonvaEventObject<MouseEvent | TouchEven
   state.drawingLayer.add(state.lastLine)
 }
 
-export function handleDrawMove(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
+export const handleDrawMove = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
   if (e.type === 'touchmove') {
     e.evt.preventDefault()
     const touch1 = (e.evt as TouchEvent).touches[0]
@@ -142,7 +142,7 @@ export function handleDrawMove(e: Konva.KonvaEventObject<MouseEvent | TouchEvent
   state.lastLine!.points(newPoints)
 }
 
-export function handleMultiTouch(touch1: Touch, touch2: Touch) {
+export const handleMultiTouch = (touch1: Touch, touch2: Touch) => {
   state.isTouching2 = true
   state.isPaint = false
   if (state.lastLine) state.lastLine.destroy()
@@ -183,7 +183,7 @@ export function handleMultiTouch(touch1: Touch, touch2: Touch) {
   state.lastCenter = newCenter
 }
 
-export function handleDrawEnd() {
+export const handleDrawEnd = () => {
   if (state.isPaint) updateCanvasState()
   state.lastDist = 0
   state.lastCenter = null
@@ -193,7 +193,7 @@ export function handleDrawEnd() {
   if (config.saveEnabled) localStorage.setItem('canvas-grid-state', state.stage.toJSON())
 }
 
-export function handleWheel(e: Konva.KonvaEventObject<WheelEvent>) {
+export const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
   e.evt.preventDefault()
 
   const oldScale = state.stage.scaleX()
@@ -227,28 +227,28 @@ export function handleWheel(e: Konva.KonvaEventObject<WheelEvent>) {
   state.stage.position(newPos)
 }
 
-export function updateCanvasState() {
+export const updateCanvasState = () => {
   state.canvasStateHistory = state.canvasStateHistory.slice(0, state.historyIndex)
   state.canvasStateHistory.push(state.lastLine!)
   state.redoCache = []
   state.historyIndex++
 }
 
-export function undo() {
+export const undo = () => {
   if (state.historyIndex <= 0) return
   const lineToUndo = state.canvasStateHistory[--state.historyIndex]
   state.redoCache.push(lineToUndo)
   lineToUndo.hide()
 }
 
-export function redo() {
+export const redo = () => {
   const lineToRedo = state.redoCache.pop()
   if (!lineToRedo) return
   lineToRedo.show()
   state.canvasStateHistory[state.historyIndex++] = lineToRedo
 }
 
-export function renderGridLayer() {
+export const renderGridLayer = () => {
   if (config.gridMode === GridMode.Rice) {
     renderRiceGrid(state.graphLayer)
   } else {
@@ -256,7 +256,7 @@ export function renderGridLayer() {
   }
 }
 
-export function clearCanvas() {
+export const clearCanvas = () => {
   state.drawingLayer.destroyChildren()
   state.graphLayer.destroyChildren()
   renderGridLayer()
@@ -286,7 +286,7 @@ window.addEventListener('blur', () => {
   }
 })
 
-export function handleKeyboardShortcuts(event: KeyboardEvent) {
+export const handleKeyboardShortcuts = (event: KeyboardEvent) => {
   // Check if the Ctrl key is pressed
   if (event.ctrlKey || event.metaKey) {
     // metaKey for Mac support
