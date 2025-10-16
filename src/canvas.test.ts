@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { setupCanvas, undo, redo, clearCanvas, state, handleDrawStart, handleDrawEnd, handleDrawMove } from './canvas'
 import Konva from 'konva'
@@ -129,7 +130,14 @@ describe('canvas', () => {
 
   it('should handle draw start, move and end', () => {
     setupCanvas()
-    const event = { type: 'mousedown', evt: { preventDefault: vi.fn() } }
+    const event = {
+        type: 'mousedown',
+        evt: { preventDefault: vi.fn() } as any,
+        target: new Konva.Rect(), // Mock target
+        pointerId: 0,
+        currentTarget: new Konva.Rect(), // Mock currentTarget
+        cancelBubble: false,
+    };
     handleDrawStart(event as Konva.KonvaEventObject<MouseEvent | TouchEvent>)
     expect(state.isPaint).toBe(true)
     expect(state.lastLine).not.toBe(null)

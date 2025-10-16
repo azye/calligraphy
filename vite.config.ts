@@ -1,4 +1,3 @@
-import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { configDefaults, defineConfig as defineVitestConfig } from 'vitest/config';
 
