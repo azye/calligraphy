@@ -1,5 +1,14 @@
 import { state } from './state'
-import { handleDrawStart, handleDrawMove, handleDrawEnd, handleWheel, undo, redo, clearCanvas } from './canvas'
+import {
+  handleDrawStart,
+  handleDrawMove,
+  handleDrawEnd,
+  handleWheel,
+  undo,
+  redo,
+  clearCanvas,
+  downloadCanvas,
+} from './canvas'
 
 export const setupEventListeners = () => {
   state.stage.on('mousedown touchstart', handleDrawStart)
@@ -43,4 +52,7 @@ export const setupUIEventListeners = () => {
 
   const redoIconButton = document.getElementById('redo-icon-button')
   redoIconButton?.addEventListener('click', redo)
+
+  const downloadIconButton = document.getElementById('download-icon-button')
+  downloadIconButton?.addEventListener('click', downloadCanvas)
 }

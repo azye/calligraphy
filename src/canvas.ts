@@ -216,4 +216,14 @@ export const clearCanvas = () => {
   state.stage.scale({ x: 1, y: 1 })
 }
 
+export const downloadCanvas = () => {
+  const dataURL = state.stage.toDataURL({ pixelRatio: 3 })
+  const link = document.createElement('a')
+  link.download = 'grid.png'
+  link.href = dataURL
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+
 import { setupEventListeners, handleKeyboardShortcuts } from './events'

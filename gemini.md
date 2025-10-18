@@ -27,3 +27,9 @@ This document summarizes the project-level changes.
 ## Test Fixes
 
 - **Fixed Failing Test**: Resolved a `TypeError` in the canvas setup test by providing a more complete mock for the `Konva.Layer` object, ensuring the `hitCanvas` property was available.
+
+## Download Button Feature
+
+- **Added Download Button**: Added a download button to the UI in `index.html`.
+- **Implemented Download Functionality**: Implemented the `downloadCanvas` function in `src/canvas.ts` to download the canvas as a PNG file.
+- **Added Event Listener**: Added an event listener to the download button in `src/events.ts` to trigger the download functionality.

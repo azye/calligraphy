@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { setupCanvas } from './canvas';
-import Konva from 'konva';
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { setupCanvas } from './canvas'
+import Konva from 'konva'
 
 // Mock Konva
 vi.mock('konva', () => {
@@ -18,7 +18,7 @@ vi.mock('konva', () => {
     startDrag: vi.fn(),
     stopDrag: vi.fn(),
     isDragging: vi.fn(() => false),
-  };
+  }
   return {
     default: {
       Stage: vi.fn(() => mockStage),
@@ -29,12 +29,12 @@ vi.mock('konva', () => {
           _canvas: {
             width: 1000,
             height: 1000,
-          }
+          },
         })),
         hitCanvas: {
           width: 1000,
           height: 1000,
-        }
+        },
       })),
       Line: vi.fn(() => ({
         points: vi.fn(),
@@ -43,28 +43,28 @@ vi.mock('konva', () => {
       })),
       Rect: vi.fn(),
     },
-  };
-});
+  }
+})
 
 describe('canvas', () => {
   beforeEach(() => {
-    const container = document.createElement('div');
-    container.id = 'container';
-    document.body.appendChild(container);
-  });
+    const container = document.createElement('div')
+    container.id = 'container'
+    document.body.appendChild(container)
+  })
 
   it('should setup canvas', () => {
-    setupCanvas();
-    expect(Konva.Stage).toHaveBeenCalled();
-  });
+    setupCanvas()
+    expect(Konva.Stage).toHaveBeenCalled()
+  })
 
   it('should handle undo and redo', () => {
     // This is a placeholder test. You should replace it with a real test.
-    expect(true).toBe(true);
-  });
+    expect(true).toBe(true)
+  })
 
   it('should clear the canvas', () => {
     // This is a placeholder test. You should replace it with a real test.
-    expect(true).toBe(true);
-  });
-});
+    expect(true).toBe(true)
+  })
+})
