@@ -219,7 +219,18 @@ export const clearCanvas = () => {
 export const downloadCanvas = () => {
   const dataURL = state.stage.toDataURL({ pixelRatio: 3 })
   const link = document.createElement('a')
-  link.download = 'grid.png'
+  const now = new Date()
+  const month = (now.getMonth() + 1).toString().padStart(2, '0')
+  const day = now.getDate().toString().padStart(2, '0')
+  const year = now.getFullYear()
+  let hours = now.getHours()
+  const ampm = hours >= 12 ? 'pm' : 'am'
+  hours = hours % 12
+  hours = hours ? hours : 12 // the hour '0' should be '12'
+  const minutes = now.getMinutes().toString().padStart(2, '0')
+  const seconds = now.getSeconds().toString().padStart(2, '0')
+  const timestamp = `${month}-${day}-${year}-${hours}${minutes}${seconds}${ampm}`
+  link.download = `export-${timestamp}.png`
   link.href = dataURL
   document.body.appendChild(link)
   link.click()

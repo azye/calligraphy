@@ -33,3 +33,4 @@ This document summarizes the project-level changes.
 - **Added Download Button**: Added a download button to the UI in `index.html`.
 - **Implemented Download Functionality**: Implemented the `downloadCanvas` function in `src/canvas.ts` to download the canvas as a PNG file.
 - **Added Event Listener**: Added an event listener to the download button in `src/events.ts` to trigger the download functionality.
+- **Added Test for Download**: Added a test for the download functionality, ensuring the canvas is downloaded with a timestamped filename.
