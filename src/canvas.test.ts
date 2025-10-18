@@ -82,12 +82,8 @@ describe('canvas', () => {
       /* intentionally empty */
     }) // Prevent navigation
     const createElementSpy = vi.spyOn(document, 'createElement').mockReturnValue(link)
-    const appendChildSpy = vi.spyOn(document.body, 'appendChild').mockImplementation(() => {
-      /* intentionally empty */
-    })
-    const removeChildSpy = vi.spyOn(document.body, 'removeChild').mockImplementation(() => {
-      /* intentionally empty */
-    })
+    const appendChildSpy = vi.spyOn(document.body, 'appendChild').mockImplementation((node) => node)
+    const removeChildSpy = vi.spyOn(document.body, 'removeChild').mockImplementation((node) => node)
 
     downloadCanvas()
 
