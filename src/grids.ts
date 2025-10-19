@@ -3,9 +3,9 @@ import Konva from 'konva'
 const BUFFER = 20 // min margin buffer size
 const CELL_SIZE = 75
 const DEFAULT_GRID_LINE = {
-  dash: [1, 1],
+  // dash: [10, 2], // makes this dashed but tanks performance
   stroke: 'black',
-  strokeWidth: 1,
+  strokeWidth: 0.5,
 }
 
 const renderGridBorder = (layer: Konva.Layer) => {
