@@ -34,3 +34,20 @@ This document summarizes the project-level changes.
 - **Implemented Download Functionality**: Implemented the `downloadCanvas` function in `src/canvas.ts` to download the canvas as a PNG file.
 - **Added Event Listener**: Added an event listener to the download button in `src/events.ts` to trigger the download functionality.
 - **Added Test for Download**: Added a test for the download functionality, ensuring the canvas is downloaded with a timestamped filename.
+
+## Grid System Enhancement
+
+- **Grid Dropdown UI**: Added a dropdown menu to the sandwich menu in `index.html` with 4 grid options (Basic, Plus, Cross, Rice).
+- **Grid Selection Events**: Implemented event handlers in `src/events.ts` for grid selection with localStorage persistence.
+- **Grid Mode Configuration**: Updated `src/config.ts` to support multiple grid types with proper TypeScript enums.
+- **Dynamic Grid Rendering**: Refactored `renderGridLayer` in `src/canvas.ts` to handle all grid types with proper cleanup.
+- **Cross Grid Optimization**: Implemented efficient `renderCrossGrid` function that draws X patterns in each cell using minimal lines.
+- **Grid Styling**: Updated grid line styling with improved dash patterns and stroke widths for better visibility.
+- **FontAwesome Integration**: Added FontAwesome CSS for dropdown icons and improved UI aesthetics.
+
+## User Interactions
+
+- **Grid Switching**: Users can now switch between different grid types via the dropdown menu without losing their drawings.
+- **Persistent Settings**: Grid selection is saved to localStorage and restored on page reload.
+- **Responsive Dropdown**: Dropdown menu closes when clicking outside and toggles properly on button click.
+- **Drawing Preservation**: User drawings are preserved when switching between grid types through proper layer management.
