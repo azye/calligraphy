@@ -1,5 +1,4 @@
 import Konva from 'konva'
-import { reversePointArray } from './utils'
 
 const BUFFER = 20 // min margin buffer size
 const CELL_SIZE = 75
@@ -101,154 +100,20 @@ const renderCrossGrid = (layer: Konva.Layer) => {
   const gridRows = Math.floor((layer.hitCanvas.height - BUFFER * 2) / 75)
   const startX = (layer.hitCanvas.width - gridCols * CELL_SIZE) / 2
   const startY = (layer.hitCanvas.height - gridRows * CELL_SIZE) / 2
-  const horizLines = new Konva.Group()
-  const horizLinesCache = new Set() // todo: implement this so no dups
+  const group = new Konva.Group()
 
-  for (let i = 1; i <= gridRows; i++) {
-    const p1Pts = [
-      startX,
-      startY + i * CELL_SIZE,
-      i <= gridCols ? startX + i * CELL_SIZE : layer.hitCanvas.width - startX,
-      i <= gridCols ? startY : startY + Math.abs(gridCols - i) * CELL_SIZE,
-    ]
-    // const p1PtsRev =  [
-    //     i <= gridCols ? startX + i * CELL_SIZE : layer.hitCanvas.width - startX,
-    //     i <= gridCols ? startY : startY + Math.abs(gridCols - i) * CELL_SIZE,
-    //     startX,
-    //     startY + i * CELL_SIZE,
+  for (let row = 0; row < gridRows; row++) {
+    for (let col = 0; col < gridCols; col++) {
+      const x1 = startX + col * CELL_SIZE
+      const y1 = startY + row * CELL_SIZE
+      const x2 = x1 + CELL_SIZE
+      const y2 = y1 + CELL_SIZE
 
-    //   ]
-    const p2Pts = [
-      layer.hitCanvas.width - startX,
-      startY + i * CELL_SIZE,
-      i <= gridCols ? layer.hitCanvas.width - (startX + i * CELL_SIZE) : startX,
-      i <= gridCols ? startY : startY + Math.abs(gridCols - i) * CELL_SIZE,
-    ]
-
-    // const p2PtsRev =  [
-    //     i <= gridCols ? layer.hitCanvas.width - (startX + i * CELL_SIZE) : startX,
-    //     i <= gridCols ? startY : startY + Math.abs(gridCols - i) * CELL_SIZE,
-    //     layer.hitCanvas.width - startX,
-    //     startY + i * CELL_SIZE,
-    //   ]
-    const a1 = p1Pts.join(',')
-    const a2 = p2Pts.join(',')
-    const a3 = reversePointArray(p1Pts).join(',')
-    const a4 = reversePointArray(p2Pts).join(',')
-
-    if (!horizLinesCache.has(a1) && !horizLinesCache.has(a3)) {
-      const p = new Konva.Line({
-        points: p1Pts,
-        ...DEFAULT_GRID_LINE,
-      })
-      horizLines.add(p)
-    }
-    if (!horizLinesCache.has(a2) && !horizLinesCache.has(a4)) {
-      const p2 = new Konva.Line({
-        points: p2Pts,
-        ...DEFAULT_GRID_LINE,
-      })
-      horizLines.add(p2)
-    }
-    horizLinesCache.add(a1)
-    horizLinesCache.add(a2)
-    horizLinesCache.add(a3)
-    horizLinesCache.add(a4)
-  }
-
-  for (let i = 0; i <= gridCols; i++) {
-    const pPts = [
-      startX + i * CELL_SIZE,
-      startY,
-      i <= gridRows ? startX : startX + Math.abs(gridRows - i) * CELL_SIZE,
-      startY + i * CELL_SIZE <= layer.hitCanvas.height - startY
-        ? startY + i * CELL_SIZE
-        : layer.hitCanvas.height - startY,
-    ]
-
-    const p2Pts = [
-      i <= gridRows ? startX : startX + Math.abs(gridRows - i) * CELL_SIZE,
-      startY + (gridRows - i) * CELL_SIZE <= startY ? startY : startY + (gridRows - i) * CELL_SIZE,
-      startX + i * CELL_SIZE,
-      layer.hitCanvas.height - startY,
-    ]
-
-    const a1 = pPts.join(',')
-    const a2 = p2Pts.join(',')
-    const a3 = reversePointArray(pPts).join(',')
-    const a4 = reversePointArray(p2Pts).join(',')
-
-    if (!horizLinesCache.has(a1) && !horizLinesCache.has(a3)) {
-      const p = new Konva.Line({
-        points: pPts,
-        ...DEFAULT_GRID_LINE,
-      })
-      horizLines.add(p)
-    }
-    if (!horizLinesCache.has(a2) && !horizLinesCache.has(a4)) {
-      const p2 = new Konva.Line({
-        points: p2Pts,
-        ...DEFAULT_GRID_LINE,
-      })
-      horizLines.add(p2)
-    }
-
-    horizLinesCache.add(a1)
-    horizLinesCache.add(a2)
-    horizLinesCache.add(a3)
-    horizLinesCache.add(a4)
-
-    if (i >= gridCols - gridRows) {
-      const rPts = [
-        startX + i * CELL_SIZE,
-        layer.hitCanvas.height - startY,
-        layer.hitCanvas.width - startX,
-        startY + (gridRows - Math.abs(gridCols - i)) * CELL_SIZE,
-      ]
-
-      const r2Pts = [
-        layer.hitCanvas.width - (startX + Math.abs(i) * CELL_SIZE),
-        layer.hitCanvas.height - startY,
-        startX,
-        startY + (gridRows - Math.abs(gridCols - i)) * CELL_SIZE,
-      ]
-
-      const a5 = rPts.join(',')
-      const a6 = r2Pts.join(',')
-      const a7 = reversePointArray(rPts).join(',')
-      const a8 = reversePointArray(r2Pts).join(',')
-
-      if (!horizLinesCache.has(a5) && !horizLinesCache.has(a7)) {
-        const r = new Konva.Line({
-          points: rPts,
-          ...DEFAULT_GRID_LINE,
-        })
-        horizLines.add(r)
-      }
-      if (!horizLinesCache.has(a6) && !horizLinesCache.has(a8)) {
-        const r2 = new Konva.Line({
-          points: r2Pts,
-          ...DEFAULT_GRID_LINE,
-        })
-        horizLines.add(r2)
-      }
-      horizLinesCache.add(a6)
-      horizLinesCache.add(a6)
-      horizLinesCache.add(a7)
-      horizLinesCache.add(a8)
-      // const r = new Konva.Line({
-      //   points: rPts,
-      // ...DEFAULT_GRID_LINE
-      // })
-      // const r2 = new Konva.Line({
-      //   points: r2Pts,
-      //   ...DEFAULT_GRID_LINE
-      // })
-      // horizLines.add(r)
-      // horizLines.add(r2)
+      group.add(new Konva.Line({ points: [x1, y1, x2, y2], ...DEFAULT_GRID_LINE }))
+      group.add(new Konva.Line({ points: [x1, y2, x2, y1], ...DEFAULT_GRID_LINE }))
     }
   }
-  layer.add(horizLines)
+  layer.add(group)
 }
 
 export const renderGrid = (layer: Konva.Layer) => {

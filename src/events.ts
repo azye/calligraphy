@@ -8,7 +8,9 @@ import {
   redo,
   clearCanvas,
   downloadCanvas,
+  renderGridLayer,
 } from './canvas'
+import { config, GridMode } from './config'
 
 export const setupEventListeners = () => {
   state.stage.on('mousedown touchstart', handleDrawStart)
@@ -55,4 +57,35 @@ export const setupUIEventListeners = () => {
 
   const downloadIconButton = document.getElementById('download-icon-button')
   downloadIconButton?.addEventListener('click', downloadCanvas)
+
+  // Grid dropdown functionality
+  const gridDropdown = document.getElementById('grid-dropdown')
+  const dropdownTrigger = gridDropdown?.querySelector('.dropdown-trigger button')
+  const dropdownItems = gridDropdown?.querySelectorAll('.dropdown-item')
+
+  // Toggle dropdown
+  dropdownTrigger?.addEventListener('click', () => {
+    gridDropdown?.classList.toggle('is-active')
+  })
+
+  // Handle grid selection
+  dropdownItems?.forEach((item) => {
+    item.addEventListener('click', (e) => {
+      e.preventDefault()
+      const gridType = (item as HTMLElement).dataset.grid as GridMode
+      if (gridType) {
+        config.gridMode = gridType
+        localStorage.setItem('grid-mode', gridType)
+        renderGridLayer()
+        gridDropdown?.classList.remove('is-active')
+      }
+    })
+  })
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!gridDropdown?.contains(e.target as Node)) {
+      gridDropdown?.classList.remove('is-active')
+    }
+  })
 }

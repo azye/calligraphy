@@ -1,6 +1,6 @@
 import Konva from 'konva'
 import { getCenter, getDistance } from './utils'
-import { renderGrid, renderRiceGrid } from './grids'
+import { renderGrid, renderRiceGrid, renderGridBorder, renderPlusGrid, renderCrossGrid } from './grids'
 
 import { config, GridMode } from './config'
 
@@ -200,10 +200,25 @@ export const redo = () => {
 }
 
 export const renderGridLayer = () => {
-  if (config.gridMode === GridMode.Rice) {
-    renderRiceGrid(state.graphLayer)
-  } else {
-    renderGrid(state.graphLayer)
+  state.graphLayer.destroyChildren()
+
+  switch (config.gridMode) {
+    case GridMode.Basic:
+      renderGrid(state.graphLayer)
+      break
+    case GridMode.Plus:
+      renderGridBorder(state.graphLayer)
+      renderPlusGrid(state.graphLayer)
+      break
+    case GridMode.Cross:
+      renderGridBorder(state.graphLayer)
+      renderCrossGrid(state.graphLayer)
+      break
+    case GridMode.Rice:
+      renderRiceGrid(state.graphLayer)
+      break
+    default:
+      renderGrid(state.graphLayer)
   }
 }
 

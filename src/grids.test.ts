@@ -168,7 +168,7 @@ describe('grids', () => {
       expect(Konva.Group).toHaveBeenCalledTimes(1)
 
       // Check mockLayer.add calls
-      // 1 (border) + 15 (basic) + 17 (plus) + 1 (group from cross) = 34
+      // 1 (border) + 15 (basic) + 17 (plus) + 1 (group from cross) = …
       expect(mockLayer.add).toHaveBeenCalledTimes(34)
     })
   })
