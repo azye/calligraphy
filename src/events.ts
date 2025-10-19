@@ -63,6 +63,13 @@ export const setupUIEventListeners = () => {
   const dropdownTrigger = gridDropdown?.querySelector('.dropdown-trigger button')
   const dropdownItems = gridDropdown?.querySelectorAll('.dropdown-item')
 
+  // Initialize dropdown button text with current grid selection
+  const currentGridItem = gridDropdown?.querySelector(`[data-grid="${config.gridMode}"]`) as HTMLElement
+  const buttonText = dropdownTrigger?.querySelector('span')
+  if (currentGridItem && buttonText) {
+    buttonText.textContent = currentGridItem.textContent
+  }
+
   // Toggle dropdown
   dropdownTrigger?.addEventListener('click', () => {
     gridDropdown?.classList.toggle('is-active')
@@ -77,6 +84,13 @@ export const setupUIEventListeners = () => {
         config.gridMode = gridType
         localStorage.setItem('grid-mode', gridType)
         renderGridLayer()
+
+        // Update dropdown button text
+        const buttonText = dropdownTrigger?.querySelector('span')
+        if (buttonText) {
+          buttonText.textContent = item.textContent
+        }
+
         gridDropdown?.classList.remove('is-active')
       }
     })

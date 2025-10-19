@@ -51,3 +51,41 @@
   padding-top: 0px;
   padding-bottom: 0px;
 }
+
+#grid-dropdown {
+  .dropdown-trigger .button {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #3a4045;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  .dropdown-menu {
+    left: 0;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.1);
+
+    .dropdown-content {
+      background-color: rgba(255, 255, 255, 0.1);
+
+      .dropdown-item {
+        color: #3a4045;
+        background-color: rgba(255, 255, 255, 0.1);
+
+        &:hover {
+          background-color: rgba(255, 255, 255, 0.1);
+          color: #3a4045;
+        }
+
+        &.is-active {
+          background-color: rgba(255, 255, 255, 0.1);
+          color: #3a4045;
+        }
+      }
+    }
+  }
+}
