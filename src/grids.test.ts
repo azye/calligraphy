@@ -107,8 +107,8 @@ describe('grids', () => {
       renderPlusGrid(mockLayer)
       const lineConfig = MockedKonva.Line.mock.calls[0][0]
       expect(lineConfig.stroke).toBe('black')
-      expect(lineConfig.strokeWidth).toBe(1)
-      expect(lineConfig.dash).toEqual([1, 1])
+      expect(lineConfig.strokeWidth).toBe(0.5)
+      expect(lineConfig.dash).toBeUndefined()
     })
   })
 
@@ -128,8 +128,8 @@ describe('grids', () => {
       // Check properties of one of the lines added to the group
       const lineConfig = MockedKonva.Line.mock.calls[0][0]
       expect(lineConfig.stroke).toBe('black')
-      expect(lineConfig.strokeWidth).toBe(1)
-      expect(lineConfig.dash).toEqual([1, 1])
+      expect(lineConfig.strokeWidth).toBe(0.5)
+      expect(lineConfig.dash).toBeUndefined()
     })
   })
 
