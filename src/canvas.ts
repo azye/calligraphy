@@ -208,6 +208,7 @@ export const renderGridLayer = () => {
       break
     case GridMode.Plus:
       renderGridBorder(state.graphLayer)
+      renderGrid(state.graphLayer)
       renderPlusGrid(state.graphLayer)
       break
     case GridMode.Cross:
