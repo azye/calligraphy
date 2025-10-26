@@ -45,7 +45,8 @@ export const setupCanvas = () => {
 
 export const handleDrawStart = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
   const pos = state.drawingLayer.getRelativePointerPosition()
-  if (!pos) return
+  if (!pos || pos.x < 0 || pos.y < 0 || pos.x >= state.drawingLayer.width() || pos.y >= state.drawingLayer.height())
+    return
 
   if (e.type === 'touchstart') {
     e.evt.preventDefault()

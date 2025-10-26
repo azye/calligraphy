@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { setupCanvas, downloadCanvas } from './canvas'
+import { setupCanvas, downloadCanvas, handleDrawStart } from './canvas'
 import Konva from 'konva'
 import { state } from './state'
 
@@ -21,23 +21,27 @@ vi.mock('konva', () => {
     isDragging: vi.fn(() => false),
     toDataURL: vi.fn(),
   }
+  const mockLayer = {
+    add: vi.fn().mockReturnThis(),
+    destroyChildren: vi.fn().mockReturnThis(),
+    getCanvas: vi.fn(() => ({
+      _canvas: {
+        width: 1000,
+        height: 1000,
+      },
+    })),
+    hitCanvas: {
+      width: 1000,
+      height: 1000,
+    },
+    getRelativePointerPosition: vi.fn(),
+    width: vi.fn(() => 1000),
+    height: vi.fn(() => 1000),
+  }
   return {
     default: {
       Stage: vi.fn(() => mockStage),
-      Layer: vi.fn(() => ({
-        add: vi.fn().mockReturnThis(),
-        destroyChildren: vi.fn().mockReturnThis(),
-        getCanvas: vi.fn(() => ({
-          _canvas: {
-            width: 1000,
-            height: 1000,
-          },
-        })),
-        hitCanvas: {
-          width: 1000,
-          height: 1000,
-        },
-      })),
+      Layer: vi.fn(() => mockLayer),
       Line: vi.fn(() => ({
         points: vi.fn().mockReturnThis(),
         hide: vi.fn().mockReturnThis(),
@@ -55,11 +59,42 @@ describe('canvas', () => {
     container.id = 'container'
     document.body.appendChild(container)
     vi.clearAllMocks()
+    state.isPaint = false
+    state.lastLine = null
   })
 
   it('should setup canvas', () => {
     setupCanvas()
     expect(Konva.Stage).toHaveBeenCalled()
+  })
+
+  describe('handleDrawStart', () => {
+    it('should not start drawing if pointer is outside the canvas', () => {
+      const mockEvent = {} as Konva.KonvaEventObject<MouseEvent>
+      state.drawingLayer = new Konva.Layer()
+
+      // Simulate pointer being outside the canvas
+      vi.spyOn(state.drawingLayer, 'getRelativePointerPosition').mockReturnValue({ x: -10, y: -10 })
+
+      handleDrawStart(mockEvent)
+
+      expect(state.isPaint).toBe(false)
+      expect(state.lastLine).toBeNull()
+    })
+
+    it('should start drawing if pointer is inside the canvas', () => {
+      const mockEvent = { type: 'mousedown' } as Konva.KonvaEventObject<MouseEvent>
+      state.drawingLayer = new Konva.Layer()
+
+      // Simulate pointer being inside the canvas
+      vi.spyOn(state.drawingLayer, 'getRelativePointerPosition').mockReturnValue({ x: 100, y: 100 })
+
+      handleDrawStart(mockEvent)
+
+      expect(state.isPaint).toBe(true)
+      expect(state.lastLine).not.toBeNull()
+      expect(Konva.Line).toHaveBeenCalled()
+    })
   })
 
   it('should handle undo and redo', () => {
