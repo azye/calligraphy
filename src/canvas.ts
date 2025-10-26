@@ -203,24 +203,23 @@ export const redo = () => {
 export const renderGridLayer = () => {
   state.graphLayer.destroyChildren()
 
+  renderGridBorder(state.graphLayer)
+  renderGrid(state.graphLayer)
+  
   switch (config.gridMode) {
     case GridMode.Basic:
-      renderGrid(state.graphLayer)
       break
     case GridMode.Plus:
-      renderGridBorder(state.graphLayer)
-      renderGrid(state.graphLayer)
       renderPlusGrid(state.graphLayer)
       break
     case GridMode.Cross:
-      renderGridBorder(state.graphLayer)
       renderCrossGrid(state.graphLayer)
       break
     case GridMode.Rice:
       renderRiceGrid(state.graphLayer)
       break
     default:
-      renderGrid(state.graphLayer)
+      break
   }
 }
 
